@@ -1,24 +1,33 @@
-# Knowledge:
+## 👋 Hi there! About Me
 
-Languages:
-<div>
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" />
-</div>
+- 🎓 Software Engineering student.
+- 🤖 Automation enthusiast.
+- 🐧 Linux user (Fedora & Arch).
+- I enjoy building solutions that **automate processes**, reduce manual work, and improve efficiency — especially using **Python**.  
+- I’m also passionate about **Linux**, CLI tools, and clean, practical software design.
 
-<br>
+## 🚀 What I Like Working With
 
-Frameworks:
-<div>
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/electron/electron-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sqlalchemy/sqlalchemy-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original.svg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/augvic/augvic@latest/devicons/xlwings.jpg" />
-    <img width=50px src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/selenium/selenium-original.svg" />
-</div>
+- 🤖 **Process automation** (RPA, internal tools, workflows).
+- 🐍 **Python** for scripting, data handling, and backend logic.
+- 🧠 Solving real-world problems with **software**.
+- 🖥️ **Linux environments**, terminal-based workflows, and productivity tools.
+
+## 🧠 Knowledge & Skills
+
+💻 Languages:
+- 🐍 Python.
+- ⚡ JavaScript.
+- 🧩 TypeScript.
+- 🌐 HTML.
+- 🎨 CSS.
+
+⚙️ Frameworks & Libraries:
+- ⚡ Electron
+- 💨 Tailwind CSS
+- 🧩 Django
+- 🌶️ Flask
+- 🗄️ SQLAlchemy
+- 📊 Pandas
+- 📑 xlwings
+- 🌐 Selenium
