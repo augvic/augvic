@@ -1,6 +1,21 @@
+###############
+### IMPORTS ###
+###############
+
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
+from shutil import copytree
+
+#################################
+### PYINSTALLER CONFIGURATION ###
+#################################
+
+COPY_STORAGE = True
+
+#################
+### PACKAGING ###
+#################
 
 analysis = Analysis(
     scripts=['main.py'],
@@ -19,13 +34,11 @@ analysis = Analysis(
     module_collection_mode=None,
     optimize=0
 )
-
 pyz = PYZ(
     analysis.pure,
     name=None,
     cipher=None
 )
-
 exe = EXE(
     pyz,
     analysis.scripts,
@@ -57,3 +70,10 @@ exe = EXE(
     upx=False,
     cdict=None
 )
+
+############################
+### COPY STORAGE TO DIST ###
+############################
+
+if COPY_STORAGE:
+    copytree(path.abspath("storage"), path.abspath(path.join("dist", "storage")), dirs_exist_ok=True)
