@@ -1,4 +1,4 @@
-## 👤 About Me:
+## 👤 About me:
 
 - 🎓 Software Engineering student.
 - 🤖 Automation enthusiast.
@@ -6,14 +6,14 @@
 - 🛠️ I enjoy building solutions that automate processes, reduce manual work, and improve efficiency.
 - 🧑‍💻 I’m also passionate about Linux, CLI tools, and clean, practical software design.
 
-## 🚀 What I Like Working With:
+## 🚀 What i like working with:
 
 - 🤖 Process automation (RPA, internal tools, workflows).
 - 🐍 Python for scripting, data handling, and backend logic.
 - 🧠 Solving real-world problems with software.
 - 🖥️ Linux environments, terminal-based workflows, and productivity tools.
 
-## 🧠 Knowledge & Skills:
+## 🧠 Knowledge and skills:
 
 💻 Languages:
 - 🐍 Python
