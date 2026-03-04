@@ -16,6 +16,7 @@
 ## 🧠 Knowledge and skills:
 
 💻 Languages:
+
 - 🐍 Python
 - ⚡ JavaScript
 - 🧩 TypeScript
@@ -23,6 +24,7 @@
 - 🎨 CSS
 
 ⚙️ Frameworks & Libraries:
+
 - ⚡ Electron
 - 💨 Tailwind CSS
 - 🧩 Django
