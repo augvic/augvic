@@ -4,12 +4,9 @@
     "files.autoSave": "afterDelay",
     "editor.fontFamily": "JetBrainsMono Nerd Font",
     "editor.fontWeight": "bold",
-    "symbols.hidesExplorerArrows": false,
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.associations": {
-        "io": "interface",
-        "storage": "dump",
-        "cortex": "core"
+        "storage": "dump"
     },
     "material-icon-theme.files.associations": {
         "*.spec": "makefile"
@@ -64,7 +61,6 @@
     },
     "workbench.editor.showTabs": "single",
     "workbench.tips.enabled": false,
-    "chat.commandCenter.enabled": false,
     "workbench.navigationControl.enabled": false,
     "window.menuBarVisibility": "compact",
     "workbench.activityBar.location": "hidden",
@@ -72,6 +68,5 @@
     "workbench.secondarySideBar.defaultVisibility": "hidden",
     "window.commandCenter": false,
     "workbench.sideBar.location": "right",
-    "javascript.updateImportsOnFileMove.enabled": "never",
     "python.analysis.typeCheckingMode": "basic"
 }
