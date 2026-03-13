@@ -1,10 +1,14 @@
 [
     {
-        "key": "ctrl+[BracketLeft]",
+        "key": "ctrl+t ctrl+o",
         "command": "workbench.action.terminal.new"
     },
     {
         "key": "ctrl+t ctrl+w",
         "command": "workbench.action.terminal.kill"
+    },
+    {
+        "key": "ctrl+t ctrl+f",
+        "command": "workbench.action.terminal.focus"
     }
 ]
