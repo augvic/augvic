@@ -10,5 +10,13 @@
     {
         "key": "ctrl+t ctrl+f",
         "command": "workbench.action.terminal.focus"
+    },
+    {
+        "key": "ctrl+e ctrl+f",
+        "command": "explorer.newFile"
+    },
+    {
+        "key": "ctrl+e ctrl+shift+f",
+        "command": "explorer.newFolder"
     }
 ]
