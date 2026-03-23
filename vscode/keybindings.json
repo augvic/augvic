@@ -1,0 +1,22 @@
+[
+    {
+        "key": "ctrl+t ctrl+o",
+        "command": "workbench.action.terminal.new"
+    },
+    {
+        "key": "ctrl+t ctrl+w",
+        "command": "workbench.action.terminal.kill"
+    },
+    {
+        "key": "ctrl+t ctrl+f",
+        "command": "workbench.action.terminal.focus"
+    },
+    {
+        "key": "ctrl+e ctrl+f",
+        "command": "explorer.newFile"
+    },
+    {
+        "key": "ctrl+e ctrl+shift+f",
+        "command": "explorer.newFolder"
+    }
+]
