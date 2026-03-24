@@ -1,4 +1,4 @@
-# 👤 augvic
+# 👨‍💻 Augusto Viceli
 
 - 🎓 Software Engineering student.
 - 🤖 Automation enthusiast.
