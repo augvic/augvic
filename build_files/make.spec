@@ -5,13 +5,14 @@
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
-from shutil import copytree
+from shutil import copytree, copy
 
 #################################
 ### PYINSTALLER CONFIGURATION ###
 #################################
 
 COPY_STORAGE = True
+COPY_README = False
 
 #################
 ### PACKAGING ###
@@ -32,7 +33,7 @@ analysis = Analysis(
     win_private_assemblies=False,
     noarchive=False,
     module_collection_mode=None,
-    optimize=0
+    optimize=2
 )
 pyz = PYZ(
     analysis.pure,
@@ -50,13 +51,13 @@ exe = EXE(
     hide_console=None,
     disable_windowed_traceback = False,
     debug=False,
-    name=None,
+    name="name",
     icon='icon.ico',
     version=None,
     manifest=None,
     embed_manifest=True,
     resources=[],
-    strip=False,
+    strip=True,
     upx_exclude=[],
     runtime_tmpdir=None,
     contents_directory="_internal",
@@ -67,7 +68,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    upx=False,
+    upx=True,
     cdict=None
 )
 
@@ -77,3 +78,10 @@ exe = EXE(
 
 if COPY_STORAGE:
     copytree(path.abspath("storage"), path.abspath(path.join("dist", "storage")), dirs_exist_ok=True)
+
+############################
+### COPY README TO DIST ###
+############################
+
+if COPY_README:
+    copy(path.abspath("readme.md"), path.abspath(path.join("dist", "readme.md")))
