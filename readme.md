@@ -1,4 +1,4 @@
-## 👤 About Me
+# 👤 augvic
 
 - 🎓 Software Engineering student.
 - 🤖 Automation enthusiast.
