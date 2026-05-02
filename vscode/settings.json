@@ -1,5 +1,5 @@
 {
-    "workbench.colorTheme": "Solarized Osaka",
+    "workbench.colorTheme": "Tokyo Night Storm",
     "workbench.layoutControl.enabled": false,
     "files.autoSave": "afterDelay",
     "editor.fontFamily": "JetBrainsMono Nerd Font",
@@ -7,7 +7,13 @@
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.associations": {
         "storage": "dump",
-        "interaction": "input"
+        "storage.dump": "dump",
+        "interaction": "input",
+        "actions": "tasks",
+        "defaults": "base",
+        "dtos": "class",
+        "build": "tools",
+        "adapters": "connection"
     },
     "material-icon-theme.files.associations": {
         "*.spec": "makefile"
@@ -62,13 +68,19 @@
     },
     "workbench.editor.showTabs": "single",
     "workbench.tips.enabled": false,
-    "workbench.navigationControl.enabled": false,
+    "workbench.navigationControl.enabled": true,
     "window.menuBarVisibility": "compact",
-    "workbench.activityBar.location": "hidden",
-    "workbench.statusBar.visible": false,
-    "workbench.secondarySideBar.defaultVisibility": "hidden",
-    "window.commandCenter": false,
+    "workbench.activityBar.location": "default",
+    "workbench.statusBar.visible": true,
+    "workbench.secondarySideBar.defaultVisibility": "visible",
     "workbench.sideBar.location": "right",
     "python.analysis.typeCheckingMode": "standard",
-    "terminal.integrated.stickyScroll.enabled": false
+    "terminal.integrated.stickyScroll.enabled": false,
+    "chat.tips.enabled": false,
+    "github.copilot.enable": {
+        "*": false,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false
+    }
 }
