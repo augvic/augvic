@@ -7,7 +7,7 @@
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.associations": {
         "storage": "dump",
-        "storage.dump": "dump",
+        "storage.example": "dump",
         "interaction": "input",
         "actions": "tasks",
         "defaults": "base",
