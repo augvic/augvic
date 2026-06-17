@@ -11,7 +11,7 @@ from shutil import copytree, copy
 ### PYINSTALLER CONFIGURATION ###
 #################################
 
-COPY_STORAGE = True
+COPY_STORAGE = False
 COPY_README = False
 
 #################
@@ -19,11 +19,11 @@ COPY_README = False
 #################
 
 analysis = Analysis(
-    scripts=['main.py'],
+    scripts=[],
     pathex=[path.abspath('.')],
     binaries=None,
-    datas=[('.env', '.')],
-    hiddenimports=None,
+    datas=[],
+    hiddenimports=[],
     hookspath=None,
     hooksconfig=None,
     excludes=None,
@@ -57,7 +57,7 @@ exe = EXE(
     manifest=None,
     embed_manifest=True,
     resources=[],
-    strip=True,
+    strip=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     contents_directory="_internal",

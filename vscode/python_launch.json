@@ -1,0 +1,71 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "run",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "execute_test",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "tests",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "execute_current_file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "alembic_generate",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "alembic revision --autogenerate",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "alembic_upgrade",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "alembic upgrade head",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "pyinstaller",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "pyinstaller make.spec",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        },
+        {
+            "name": "pipreqs",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "pipreqs ./src --force --encoding=utf8",
+            "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+        }
+    ]
+}

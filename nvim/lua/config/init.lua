@@ -1,0 +1,6 @@
+require("config.keymaps")
+require("config.options")
+require("config.dap")
+require("config.which_key")
+require("config.colorscheme")
+require("config.lspconfig")
