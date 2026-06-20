@@ -198,3 +198,9 @@ vim.keymap.set(
     "<C-Right>",
     ":vertical resize -2<CR>"
 )
+vim.keymap.set(
+    "n",
+    "<leader>sr",
+    "<cmd>Spectre<CR>",
+    { desc = "Search and Replace" }
+)

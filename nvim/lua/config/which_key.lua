@@ -4,5 +4,6 @@ require("which-key").add({
     { "<leader>b", group = "Buffer" },
     { "<leader>d", group = "Debug" },
     { "<leader>t", group = "Terminal" },
-    { "<leader>l", group = "Diagnostics" }
+    { "<leader>l", group = "Diagnostics" },
+    { "<leader>s", group = "Spectre" }
 })
