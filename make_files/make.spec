@@ -6,14 +6,20 @@ from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
 from pathlib import Path
-from shutil import copytree, rmtree
+from shutil import copytree, rmtree, copy2
+
+#####################
+### CONFIGURATION ###
+#####################
+
+EXE_NAME = ""
 
 #################
 ### PACKAGING ###
 #################
 
 analysis = Analysis(
-    scripts=[],
+    scripts=['main.py'],
     pathex=[path.abspath('.')],
     binaries=None,
     datas=[],
@@ -45,7 +51,7 @@ exe = EXE(
     hide_console=None,
     disable_windowed_traceback = False,
     debug=False,
-    name="name",
+    name=EXE_NAME,
     icon='icon.ico',
     version=None,
     manifest=None,
@@ -54,7 +60,7 @@ exe = EXE(
     strip=False,
     upx_exclude=[],
     runtime_tmpdir=None,
-    contents_directory="_internal",
+    contents_directory='_internal',
     append_pkg=True,
     uac_admin=False,
     uac_uiaccess=False,
@@ -72,10 +78,13 @@ exe = EXE(
 
 resources = Path("resources").resolve()
 dist = Path("dist").resolve()
+bin = Path("bin").resolve()
 build = Path("build").resolve()
-if resources.exists():
-    copytree(resources, dist / "resources", dirs_exist_ok=True)
-if build.exists():
-    rmtree(build)
-if dist.exists():
+if not bin.exists():
+    if resources.exists():
+        copytree(resources, dist / "resources", dirs_exist_ok=True)
     dist.rename(dist.parent / "bin")
+else:
+    copy2(dist / f"{EXE_NAME}.exe", bin / f"{EXE_NAME}.exe")
+    rmtree(dist)
+rmtree(build)
