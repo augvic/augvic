@@ -5,14 +5,8 @@
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
-from shutil import copytree, copy
-
-#################################
-### PYINSTALLER CONFIGURATION ###
-#################################
-
-COPY_STORAGE = False
-COPY_README = False
+from pathlib import Path
+from shutil import copytree, rmtree
 
 #################
 ### PACKAGING ###
@@ -72,16 +66,16 @@ exe = EXE(
     cdict=None
 )
 
-############################
-### COPY STORAGE TO DIST ###
-############################
+###############
+### CLEANUP ###
+###############
 
-if COPY_STORAGE:
-    copytree(path.abspath("storage"), path.abspath(path.join("dist", "storage")), dirs_exist_ok=True)
-
-############################
-### COPY README TO DIST ###
-############################
-
-if COPY_README:
-    copy(path.abspath("readme.md"), path.abspath(path.join("dist", "readme.md")))
+resources = Path("resources").resolve()
+dist = Path("dist").resolve()
+build = Path("build").resolve()
+if resources.exists():
+    copytree(resources, dist / "resources", dirs_exist_ok=True)
+if build.exists():
+    rmtree(build)
+if dist.exists():
+    dist.rename(dist.parent / "bin")
