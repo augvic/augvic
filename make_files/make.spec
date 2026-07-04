@@ -85,6 +85,9 @@ if not bin.exists():
         copytree(resources, dist / "resources", dirs_exist_ok=True)
     dist.rename(dist.parent / "bin")
 else:
-    copy2(dist / f"{EXE_NAME}.exe", bin / f"{EXE_NAME}.exe")
+    if platform.system() == "Windows":
+        copy2(dist / f"{EXE_NAME}.exe", bin / f"{EXE_NAME}.exe")
+    else:
+        copy2(dist / EXE_NAME, bin / EXE_NAME)
     rmtree(dist)
 rmtree(build)
