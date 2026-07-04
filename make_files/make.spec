@@ -7,6 +7,7 @@ from PyInstaller.building.api import EXE, PYZ
 from os import path
 from pathlib import Path
 from shutil import copytree, rmtree, copy2
+import platform
 
 #####################
 ### CONFIGURATION ###
