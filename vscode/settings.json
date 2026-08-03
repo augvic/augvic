@@ -8,7 +8,7 @@
     "material-icon-theme.folders.associations": {
         "storage": "dump",
         "storage.example": "dump",
-        "interaction": "input",
+        "interactions": "input",
         "actions": "tasks",
         "defaults": "base",
         "dtos": "class",
@@ -74,7 +74,7 @@
     "workbench.statusBar.visible": true,
     "workbench.secondarySideBar.defaultVisibility": "hidden",
     "workbench.sideBar.location": "right",
-    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.typeCheckingMode": "strict",
     "terminal.integrated.stickyScroll.enabled": false,
     "chat.tips.enabled": false,
     "github.copilot.enable": {
@@ -83,5 +83,6 @@
         "markdown": false,
         "scminput": false
     },
-    "chat.viewSessions.orientation": "stacked"
+    "chat.viewSessions.orientation": "stacked",
+    "python.analysis.diagnosticsSource": "Pylance"
 }

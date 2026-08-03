@@ -6,6 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "src",
+            "args": [],
             "console": "integratedTerminal",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
@@ -16,6 +17,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "tests",
+            "args": [],
             "console": "integratedTerminal",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
@@ -26,6 +28,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
+            "args": [],
             "console": "integratedTerminal",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
