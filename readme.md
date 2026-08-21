@@ -2,7 +2,7 @@
 
 - 🎓 Software Engineering student.
 - 🤖 Automation enthusiast.
-- 🐧 Linux user (Fedora).
+- 🐧 Linux user (Arch).
 - 🛠️ I enjoy building solutions that automate processes, reduce manual work, and improve efficiency.
 - 🧑‍💻 I’m also passionate about Linux, CLI tools, and clean, practical software design.
 
