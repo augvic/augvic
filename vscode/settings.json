@@ -13,7 +13,9 @@
         "defaults": "base",
         "dtos": "class",
         "build": "tools",
-        "adapters": "connection"
+        "adapters": "connection",
+        "infrastructures": "server",
+        "automations": "robot"
     },
     "material-icon-theme.files.associations": {
         "*.spec": "makefile"
