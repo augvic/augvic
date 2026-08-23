@@ -353,9 +353,21 @@ You should be able to mentally translate the directory tree into the component h
 
 Directory names should communicate whether the directory represents **one component** or **a collection of components**.
 
-## Singular noun = component
+However, **singular vs. plural is not a strict naming rule**. It is a semantic convention that helps communicate the architectural role of a directory.
 
-A singular directory represents a **single component that has been expanded into multiple files**.
+The important question is not:
+
+> "Is this word singular or plural?"
+
+The important question is:
+
+> **"Does this directory represent one component, or a collection/category of components?"**
+
+---
+
+## 🧩 Singular noun = component
+
+A singular directory normally represents a **single component that has been expanded into multiple files**.
 
 For example:
 
@@ -378,23 +390,23 @@ The directory `api/` means:
 
 > **"Here is the Api component."**
 
-The same principle applies to:
+The same principle applies to components such as:
 
 ```text
 database/
-configuration/
 authentication/
 application/
 project/
+configuration/
 ```
 
-These directories represent singular components.
+These directories represent a singular conceptual component.
 
 ---
 
-## Plural noun = collection
+## 📦 Plural noun = collection
 
-A plural directory represents a **collection of related peer components**.
+A plural directory normally represents a **collection of related peer components**.
 
 For example:
 
@@ -418,9 +430,9 @@ The `models/` directory means:
 
 > **"Here are the models."**
 
-It is a collection rather than one `Models` component.
+It represents a collection rather than a single `Models` component.
 
-The same principle applies to:
+Other examples include:
 
 ```text
 models/
@@ -432,6 +444,126 @@ repositories/
 ```
 
 These directories represent collections of peer components.
+
+---
+
+## ⚠️ Not Every Collection Has a Plural Form
+
+The singular/plural distinction is **semantic, not grammatical**.
+
+Some concepts naturally have a plural form:
+
+```text
+model  → models
+service → services
+handler → handlers
+route → routes
+```
+
+However, some concepts are naturally used as **uncountable nouns, category names, technical terms, acronyms, or concepts without a useful plural form**.
+
+For example:
+
+```text
+infrastructure/
+middleware/
+ipc/
+security/
+configuration/
+```
+
+These may represent **collections or categories of components**, even though their names are not grammatically plural.
+
+For example:
+
+```text
+infrastructure/
+├── database.py
+├── messaging.py
+└── storage.py
+```
+
+This directory represents a collection of infrastructure components.
+
+Likewise:
+
+```text
+middleware/
+├── authentication.py
+├── logging.py
+└── compression.py
+```
+
+`middleware/` is still a collection of components, despite not being a plural noun.
+
+The same applies to technical acronyms:
+
+```text
+ipc/
+├── shared_memory.py
+├── pipe.py
+└── socket.py
+```
+
+`ipc/` represents a category containing multiple components related to **Inter-Process Communication**, rather than a single IPC component.
+
+Therefore, the convention should be understood as:
+
+```text
+Singular name
+    ↓
+Usually represents one conceptual component
+
+Plural name
+    ↓
+Usually represents a collection of peer components
+
+Non-plural category name
+    ↓
+May also represent a collection of components
+```
+
+The **meaning of the directory takes precedence over its grammatical form**.
+
+> 🧠 **Do not force a word into a plural form just to satisfy the convention.**
+>
+> If a concept naturally functions as a category, technical domain, acronym, or uncountable noun, its natural name should be preserved.
+
+For example, this is perfectly valid:
+
+```text
+project/
+├── api/
+├── database/
+├── models/
+├── services/
+├── infrastructure/
+├── middleware/
+└── ipc/
+```
+
+The architectural interpretation is:
+
+```text
+Project
+├── Api              ← component
+├── Database         ← component
+├── Models           ← collection
+├── Services         ← collection
+├── Infrastructure   ← collection/category
+├── Middleware       ← collection/category
+└── IPC              ← collection/category
+```
+
+So the actual COA principle is not:
+
+> **"Plural directories are collections."**
+
+It is:
+
+> **"Directories representing collections or categories should be named according to the natural terminology of the domain. Pluralization is only one way of expressing that meaning."**
+
+This distinction is important because **architecture should follow meaning, not grammar**. 🧠🏗️
 
 ---
 
@@ -830,7 +962,318 @@ The internal filesystem can remain detailed while the external interface remains
 
 ---
 
-# 🧭 15. COA Mental Model
+# 🌐 15. Web UI Applications
+
+Web UI applications require a small adaptation of the COA mindset.
+
+Unlike applications written primarily in one programming language, a traditional web application is often composed of multiple technologies:
+
+- 🟨 JavaScript / TypeScript — behavior and logic
+- 🟧 HTML — structure and markup
+- 🟦 CSS — presentation and styling
+
+Therefore, the concept of **"one component per source file"** should not be interpreted as requiring HTML, CSS, and JavaScript to be completely separated from the component they belong to.
+
+Instead, the **component itself remains the primary unit of organization**, and its different technical representations are kept together when they belong to that component.
+
+The important question remains:
+
+> **"What is the component?"**
+
+Once the component is identified, its HTML, JavaScript, CSS, and other resources can be organized around it.
+
+---
+
+## 🖥️ Single-Page Applications (SPA)
+
+For a SPA, the application can be organized around a root application component:
+
+```text id="3m9s0k"
+project/
+├── project.js
+├── project.html
+├── pages/
+├── components/
+└── themes/
+```
+
+Conceptually:
+
+```text id="6x8h2d"
+Project
+├── Pages
+├── Components
+└── Themes
+```
+
+The root `project.js` can act as the main composition component:
+
+```javascript id="6m6y9f"
+class Project {
+
+    constructor() {
+        this.page1 = new Page1();
+        this.page2 = new Page2();
+    }
+}
+```
+
+A page can then compose smaller components:
+
+```javascript id="4q9g8f"
+class Page1 {
+
+    constructor() {
+        this.form = new Form();
+        this.button = new Button();
+
+        this.form.element.appendChild(
+            this.button.element
+        );
+    }
+}
+```
+
+This produces a component hierarchy such as:
+
+```text id="w7q3t2"
+Project
+├── Page1
+│   ├── Form
+│   └── Button
+└── Page2
+```
+
+The DOM itself can therefore be considered part of the component's internal structure.
+
+For example:
+
+```text id="v1t7za"
+Page1
+└── Form
+    └── Button
+```
+
+And the JavaScript components are responsible for composing and wiring those elements together.
+
+---
+
+## 🧩 Components Can Span Multiple Technologies
+
+A Web UI component does not necessarily need to be represented by a single file.
+
+For example, a component could have:
+
+```text id="5j1n3d"
+button/
+├── button.js
+├── button.html
+└── button.css
+```
+
+Conceptually:
+
+```text id="t8h4pm"
+Button
+├── behavior
+├── structure
+└── presentation
+```
+
+The three files are not three independent architectural components.
+
+They are **three representations of the same component**.
+
+This is an important distinction.
+
+COA is concerned with the **architectural identity of the component**, not with forcing every technology involved in that component into a separate architectural hierarchy.
+
+---
+
+# 📄 16. Multi-Page Applications (MPA)
+
+For a traditional multi-page application, each page can be treated as a component.
+
+For example:
+
+```text id="1q3x7m"
+project/
+├── pages/
+│   ├── login/
+│   │   ├── login.html
+│   │   ├── login.js
+│   │   └── private_theme.css
+│   └── hub/
+│       ├── hub.html
+│       └── hub.js
+└── themes/
+```
+
+Conceptually:
+
+```text id="s8w4qa"
+Project
+├── Pages
+│   ├── Login
+│   │   ├── HTML
+│   │   ├── JavaScript
+│   │   └── private theme
+│   │
+│   └── Hub
+│       ├── HTML
+│       └── JavaScript
+│
+└── Themes
+```
+
+Here, `login/` is a **singular component directory** representing the `Login` page.
+
+Likewise, `hub/` represents the `Hub` page.
+
+The files inside the directory are implementation parts of that component:
+
+```text id="a6r9zc"
+login/
+├── login.html
+├── login.js
+└── private_theme.css
+```
+
+This can be understood as:
+
+```text id="n0z8ue"
+Login
+├── HTML
+├── JavaScript
+└── private theme
+```
+
+The directory therefore acts as the boundary of the page component.
+
+---
+
+# 🎨 17. Themes and Styling
+
+Themes should follow the same semantic distinction used throughout COA.
+
+A shared collection of themes can be represented by a plural directory:
+
+```text id="2f8h0q"
+themes/
+├── light.css
+├── dark.css
+└── corporate.css
+```
+
+Conceptually:
+
+```text id="w2g7na"
+Themes
+├── Light
+├── Dark
+└── Corporate
+```
+
+However, when a style belongs exclusively to one component, it can remain inside that component:
+
+```text id="5w2x1c"
+pages/
+└── login/
+    ├── login.html
+    ├── login.js
+    └── private_theme.css
+```
+
+This communicates:
+
+> `private_theme.css` belongs to `Login`.
+
+Whereas:
+
+```text id="q8k1sd"
+themes/
+└── dark.css
+```
+
+communicates:
+
+> `dark.css` is part of the application's shared theme collection.
+
+---
+
+# 🧠 18. The Same COA Principles Still Apply
+
+Although Web UI applications use several technologies simultaneously, the underlying architectural principles do not change.
+
+The application should still be viewed as a hierarchy of components:
+
+```text id="c9v4na"
+Application
+├── Pages
+│   ├── Login
+│   └── Hub
+├── Components
+│   ├── Button
+│   ├── Form
+│   └── Modal
+└── Themes
+    ├── Light
+    └── Dark
+```
+
+The filesystem should represent that hierarchy:
+
+```text id="q2m6wr"
+project/
+├── project.js
+├── project.html
+├── pages/
+│   ├── login/
+│   └── hub/
+├── components/
+│   ├── button/
+│   ├── form/
+│   └── modal/
+└── themes/
+    ├── light.css
+    └── dark.css
+```
+
+And the JavaScript should wire the components together:
+
+```javascript id="p7w3kd"
+class Project {
+
+    constructor() {
+        this.page1 = new Page1();
+        this.page2 = new Page2();
+    }
+}
+```
+
+The fact that the application uses `.html`, `.css`, and `.js` does not change the fundamental model.
+
+> 🌐 **The technology is implementation. The component is architecture.**
+
+The same component-oriented thinking can therefore be applied to:
+
+- 🟨 JavaScript
+- 🟦 TypeScript
+- 🟧 HTML
+- 🎨 CSS
+- 🧩 Web Components
+- ⚛️ React
+- 🟢 Vue
+- 🔺 Angular
+- and other Web UI technologies.
+
+The framework may change the implementation details, but the architectural question remains the same:
+
+> **What are the components, what do they contain, and how are they wired together?**
+
+---
+
+# 🧭 19. COA Mental Model
 
 When designing a project, ask the following questions:
 
@@ -864,7 +1307,7 @@ Architecture should coexist with the language's established conventions.
 
 ---
 
-# 🏁 16. Summary
+# 🏁 20. Summary
 
 Component-Oriented Architecture is fundamentally a **way of thinking about software**.
 
