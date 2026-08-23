@@ -159,6 +159,50 @@ cache/
 
 These directories represent conceptual subsystems rather than arbitrary collections.
 
+## Grammatical Number Is a Heuristic, Not an Absolute Rule
+
+The singular/plural convention is a useful naming heuristic, but **semantic role is authoritative**.
+
+Some English nouns are singular or uncountable even when they represent a category or collection of related things.
+
+For example:
+
+```text
+infrastructure/
+```
+
+is naturally named `infrastructure/`, even when it contains multiple independent infrastructure-related components:
+
+```text
+infrastructure/
+├── database.py
+├── logging.py
+├── configuration.py
+└── filesystem.py
+```
+
+`infrastructures/` is generally not appropriate for this purpose. In normal English, *infrastructure* is an uncountable noun; its plural form would usually refer to distinct infrastructure systems rather than a category of infrastructure code.
+
+Therefore:
+
+```text
+api/             → component
+database/        → component
+authentication/  → component
+
+models/          → category
+services/        → category
+handlers/        → category
+
+infrastructure/ → category
+```
+
+The rule should therefore be understood as:
+
+> **A noun representing a singular conceptual entity usually names a component. A noun representing a collection or category usually names a category. Grammatical singular/plural form is the normal naming convention, but semantic meaning takes precedence.**
+
+Do not force a grammatically plural name merely to satisfy the convention. Prefer the natural and idiomatic name when the language does not provide a suitable plural form.
+
 ---
 
 # 3. Component Packages
