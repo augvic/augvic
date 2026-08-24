@@ -922,7 +922,7 @@ JavaScript:
 
 ```text
 models/
-├── index.js
+├── init.js
 ├── model_1.js
 ├── model_2.js
 ├── model_3.js
