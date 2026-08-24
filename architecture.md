@@ -1,6 +1,6 @@
 # 🧩 Component-Oriented Architecture — COA
 
-## 1. 🎯 Purpose and Philosophy
+# 1. 🎯 Purpose and Philosophy
 
 This document defines the architectural and organizational conventions used when designing and structuring software projects.
 
@@ -903,7 +903,211 @@ The component-oriented mindset remains the same.
 
 ---
 
-# 14. 📦 Use Language Features for Component Exports
+# 14. 💬 Self-Documenting Code — Avoid Comments
+
+COA strongly prefers **self-explanatory code over comments**.
+
+The architecture, component hierarchy, naming, and organization should make the purpose and relationships of the code understandable without requiring comments to explain what the code is doing.
+
+The fundamental idea is:
+
+> **The code should explain itself.**
+
+When components are properly separated and named, the filesystem already communicates the architecture:
+
+```text
+project/
+├── api/
+│   ├── api.py
+│   └── routes/
+├── database/
+│   ├── database.py
+│   └── tables/
+├── configuration/
+└── services/
+```
+
+The code then communicates the behavior:
+
+```python
+class Project:
+
+    def __init__(self) -> None:
+        self.database = Database()
+        self.api = Api(self.database)
+        self.configuration = Configuration()
+```
+
+There should be no need to write comments such as:
+
+```python
+# Create the database
+self.database = Database()
+
+# Create the API and give it the database
+self.api = Api(self.database)
+
+# Create the configuration
+self.configuration = Configuration()
+```
+
+The code is already clear.
+
+The architecture and the code structure should carry the explanation.
+
+## 🧠 Comments Should Not Compensate for Poor Structure
+
+If a piece of code requires a comment to explain what it does, first ask whether the code itself could be improved.
+
+For example, avoid:
+
+```python
+# Check if the user is allowed to access the resource
+if user.role == "admin" or user.role == "manager":
+    ...
+```
+
+Prefer:
+
+```python
+if self.authorization.can_access(user, resource):
+    ...
+```
+
+The name and component boundary communicate the intent directly.
+
+## 🧩 Architecture as Documentation
+
+In COA, the architecture itself acts as documentation.
+
+For example:
+
+```text
+api/
+├── routes/
+├── middleware/
+└── authentication/
+```
+
+already communicates that the API contains routes, middleware, and authentication.
+
+The component hierarchy therefore becomes a form of **structural documentation**.
+
+> 🌳 **A well-organized project should explain its architecture through its structure.**
+
+## ✨ Prefer Better Names Over Comments
+
+When a comment is being used to explain *what* something does, prefer improving the name.
+
+Instead of:
+
+```python
+# Get the active users
+users = get_users()
+```
+
+prefer:
+
+```python
+active_users = get_active_users()
+```
+
+Instead of:
+
+```python
+# Calculate the total price including taxes
+value = calculate()
+```
+
+prefer:
+
+```python
+total_price_with_tax = calculate_total_price_with_tax()
+```
+
+The code becomes its own explanation.
+
+## 🚫 Avoid Comments That Repeat the Code
+
+Comments should not simply translate the code into natural language.
+
+Avoid:
+
+```python
+# Increment counter
+counter += 1
+
+# Create user
+user = User()
+
+# Save user
+repository.save(user)
+```
+
+These comments provide no additional information.
+
+The code is already explicit.
+
+## ⚠️ Comments May Still Be Necessary
+
+The principle is not that comments are forbidden under every circumstance.
+
+A comment can be appropriate when it explains something that **cannot be expressed clearly through the code itself**.
+
+For example:
+
+- an external system limitation;
+- a non-obvious workaround;
+- a protocol or specification requirement;
+- a temporary compatibility measure;
+- a security or operational constraint;
+- a reason why an unusual implementation is necessary.
+
+For example:
+
+```python
+# This workaround is required because the legacy API rejects
+# requests containing an empty Content-Type header.
+request.headers.pop("Content-Type", None)
+```
+
+The comment explains **why** the unusual code exists, rather than simply explaining **what** the code does.
+
+This leads to a useful rule:
+
+> **Do not comment what the code already says. Comment only what the code cannot say.**
+
+## 🧠 The COA Principle
+
+COA therefore prefers the following hierarchy:
+
+```text
+Architecture
+    ↓
+Component boundaries
+    ↓
+Meaningful names
+    ↓
+Clear code
+    ↓
+Comments only when necessary
+```
+
+The objective is to make the codebase understandable by reading:
+
+1. the repository structure;
+2. the component hierarchy;
+3. the component names;
+4. the dependencies between components;
+5. the implementation itself.
+
+Comments should be the **exception**, not the primary mechanism for explaining the software.
+
+> 💡 **If the code needs a comment to explain what it does, first ask whether the code should be changed so that it explains itself.**
+
+---
+
+# 15. 📦 Use Language Features for Component Exports
 
 When the language provides a standard mechanism for exposing components from a package or directory, use it.
 
@@ -942,7 +1146,7 @@ The internal filesystem can remain detailed while the external interface remains
 
 ---
 
-# 15. 🌐 Web UI Applications
+# 16. 🌐 Web UI Applications
 
 Web UI applications require a small adaptation of the COA mindset.
 
@@ -1084,7 +1288,7 @@ The files inside it are implementation parts of that component.
 
 ---
 
-# 16. 🎨 Themes and Styling
+# 17. 🎨 Themes and Styling
 
 Shared themes should normally be represented as a collection:
 
@@ -1131,7 +1335,7 @@ communicates:
 
 ---
 
-# 17. 📈 Components Should Grow Hierarchically
+# 18. 📈 Components Should Grow Hierarchically
 
 COA does not require every component to start as a directory.
 
@@ -1190,7 +1394,7 @@ This allows architecture to evolve naturally.
 
 ---
 
-# 18. 🧭 COA Design Checklist
+# 19. 🧭 COA Design Checklist
 
 When designing a project or a new component, ask:
 
@@ -1232,7 +1436,7 @@ A repository should represent one coherent software unit.
 
 ---
 
-# 19. 🧠 The Complete COA Mental Model
+# 20. 🧠 The Complete COA Mental Model
 
 The complete architecture can be understood as a hierarchy of boundaries:
 
@@ -1312,7 +1516,7 @@ Each level answers a different question:
 
 ---
 
-# 🏁 20. Final Principles
+# 🏁 21. Final Principles
 
 Component-Oriented Architecture is fundamentally a **way of thinking about software**.
 
