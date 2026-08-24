@@ -14,6 +14,16 @@ import platform
 #####################
 
 EXE_NAME = ""
+MODULE_NAME = ""
+RESOURCES = Path(f"{MODULE_NAME}/resources").resolve()
+DIST = Path("dist").resolve()
+
+########################
+### BEFORE PACKAGING ###
+########################
+
+if DIST.exists():
+    rmtree(DIST)
 
 #################
 ### PACKAGING ###
@@ -73,22 +83,9 @@ exe = EXE(
     cdict=None
 )
 
-###############
-### CLEANUP ###
-###############
+#######################
+### AFTER PACKAGING ###
+#######################
 
-resources = Path("resources").resolve()
-dist = Path("dist").resolve()
-bin = Path("bin").resolve()
-build = Path("build").resolve()
-if not bin.exists():
-    if resources.exists():
-        copytree(resources, dist / "resources", dirs_exist_ok=True)
-    dist.rename(dist.parent / "bin")
-else:
-    if platform.system() == "Windows":
-        copy2(dist / f"{EXE_NAME}.exe", bin / f"{EXE_NAME}.exe")
-    else:
-        copy2(dist / EXE_NAME, bin / EXE_NAME)
-    rmtree(dist)
-rmtree(build)
+if RESOURCES.exists():
+    copytree(resources, dist / "resources", dirs_exist_ok=True)
