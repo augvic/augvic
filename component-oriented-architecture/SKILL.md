@@ -908,7 +908,209 @@ The component-oriented mindset remains the same.
 
 ---
 
-# 14. 💬 Self-Documenting Code — Avoid Comments
+# 14. 🔒 Strict Type Checking
+
+COA strongly prefers **strict type checking**.
+
+Whenever the language and its tooling provide a type checker, the project should use the **strictest practical type-checking mode** available.
+
+This applies regardless of the programming language:
+
+- 🐍 Python — strict static type checking
+- 🟨 TypeScript — strict compiler options
+- ☕ Java — strict compiler and static-analysis settings
+- 🟦 C# — nullable reference types and strict analysis where applicable
+- 🦀 Rust — use the compiler's type system and linting capabilities rigorously
+- ⚙️ C++ — use strong compiler diagnostics and static-analysis tools
+- and other languages with type-checking or static-analysis capabilities.
+
+The principle is:
+
+> **If the language can detect a class of error before runtime, make the tooling detect it as early and strictly as practical.**
+
+## 🧠 Types Are Part of the Architecture
+
+Types should not be treated merely as annotations added to satisfy a tool.
+
+They are part of the component's interface.
+
+For example:
+
+```python
+class Database:
+
+    def __init__(self, database_engine: str) -> None:
+        self.database_engine = database_engine
+```
+
+The type information communicates that `Database` expects a `str` and that its constructor does not return a value.
+
+Likewise:
+
+```python
+class Api:
+
+    def __init__(self, database: Database) -> None:
+        self.database = database
+```
+
+communicates the relationship between `Api` and `Database`.
+
+The type system therefore helps make the component boundaries explicit.
+
+> 🔌 **Types are part of the contract between components.**
+
+## 🚫 Do Not Weaken the Type Checker to Make Code Pass
+
+Avoid disabling strict checks simply because they make development more difficult.
+
+For example, do not routinely:
+
+- disable type-checking rules;
+- suppress type errors without a valid reason;
+- use broad escape types such as `Any` when a precise type is possible;
+- omit types from important public interfaces;
+- weaken compiler settings to accommodate poorly typed code.
+
+Instead, improve the code or the component boundary.
+
+For example, avoid:
+
+```python
+def process(value: Any):
+    ...
+```
+
+when the component actually requires a specific type:
+
+```python
+def process(value: PaymentRequest) -> PaymentResult:
+    ...
+```
+
+The more precise version communicates the component's contract directly.
+
+## 🧩 Strict Typing and Component Boundaries
+
+Strict type checking becomes especially valuable in COA because components communicate through explicit interfaces.
+
+Consider:
+
+```text
+Project
+│
+├── Configuration
+├── Database
+└── Api
+    ├── Route1
+    └── Route2
+```
+
+The types of the dependencies make those relationships explicit:
+
+```python
+class Project:
+
+    def __init__(
+        self,
+        database: Database,
+        api: Api,
+        configuration: Configuration,
+    ) -> None:
+        self.database = database
+        self.api = api
+        self.configuration = configuration
+```
+
+A type checker can then verify that the components are actually being wired together correctly.
+
+This makes the type system another layer of architectural validation:
+
+```text
+Filesystem
+    ↓
+Component hierarchy
+
+Types
+    ↓
+Component contracts
+
+Type checker
+    ↓
+Dependency correctness
+```
+
+## ⚠️ Strict Does Not Mean Blindly Rigid
+
+"Strict" does not mean that every possible warning must be eliminated at any cost.
+
+Some situations genuinely require an escape hatch, such as:
+
+- interaction with an untyped external library;
+- dynamically generated values;
+- legacy APIs;
+- language limitations;
+- interoperability with another system.
+
+When this happens, the exception should be **localized and intentional**.
+
+Prefer:
+
+```python
+def load_legacy_value() -> LegacyValue:
+    ...
+```
+
+over allowing an untyped boundary to spread throughout the entire application.
+
+The goal is to keep the untyped or dynamically typed portion of the system as small as possible.
+
+> **Contain uncertainty at the boundary; do not let it spread through the architecture.**
+
+## 🛠️ Type Checking Is Part of Development
+
+Type checking should be integrated into the normal development workflow.
+
+It should ideally run:
+
+- during local development;
+- in the editor/IDE;
+- as part of automated validation;
+- in CI/CD pipelines.
+
+A project should not depend solely on developers manually remembering to run the type checker.
+
+The development level of the repository should therefore include the necessary configuration for strict type checking.
+
+The exact configuration depends on the language and tooling.
+
+## 🧠 The COA Principle
+
+COA therefore follows this rule:
+
+> 🔒 **Always use the strict type-checking mode that is practical for the language and project.**
+
+The objective is not merely to have types in the code.
+
+The objective is to make the type system actively protect the architecture.
+
+```text
+Explicit Components
+        ↓
+Explicit Interfaces
+        ↓
+Explicit Types
+        ↓
+Strict Type Checking
+        ↓
+Earlier Error Detection
+```
+
+> 💡 **If the compiler or type checker can prove that something is wrong, let it do so before the program reaches runtime.**
+
+---
+
+# 15. 💬 Self-Documenting Code — Avoid Comments
 
 COA strongly prefers **self-explanatory code over comments**.
 
@@ -1112,7 +1314,7 @@ Comments should be the **exception**, not the primary mechanism for explaining t
 
 ---
 
-# 15. 📦 Use Language Features for Component Exports
+# 16. 📦 Use Language Features for Component Exports
 
 When the language provides a standard mechanism for exposing components from a package or directory, use it.
 
@@ -1151,7 +1353,7 @@ The internal filesystem can remain detailed while the external interface remains
 
 ---
 
-# 16. 🌐 Web UI Applications
+# 17. 🌐 Web UI Applications
 
 Web UI applications require a small adaptation of the COA mindset.
 
@@ -1293,7 +1495,7 @@ The files inside it are implementation parts of that component.
 
 ---
 
-# 17. 🎨 Themes and Styling
+# 18. 🎨 Themes and Styling
 
 Shared themes should normally be represented as a collection:
 
@@ -1340,7 +1542,7 @@ communicates:
 
 ---
 
-# 18. 📈 Components Should Grow Hierarchically
+# 19. 📈 Components Should Grow Hierarchically
 
 COA does not require every component to start as a directory.
 
@@ -1399,7 +1601,7 @@ This allows architecture to evolve naturally.
 
 ---
 
-# 19. 🧭 COA Design Checklist
+# 20. 🧭 COA Design Checklist
 
 When designing a project or a new component, ask:
 
@@ -1441,7 +1643,7 @@ A repository should represent one coherent software unit.
 
 ---
 
-# 20. 🧠 The Complete COA Mental Model
+# 21. 🧠 The Complete COA Mental Model
 
 The complete architecture can be understood as a hierarchy of boundaries:
 
@@ -1521,7 +1723,7 @@ Each level answers a different question:
 
 ---
 
-# 🏁 21. Final Principles
+# 🏁 22. Final Principles
 
 Component-Oriented Architecture is fundamentally a **way of thinking about software**.
 
