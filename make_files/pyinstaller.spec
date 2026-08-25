@@ -6,8 +6,7 @@ from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
 from pathlib import Path
-from shutil import copytree, rmtree, copy2
-import platform
+from shutil import copytree, rmtree
 
 #####################
 ### CONFIGURATION ###
@@ -15,13 +14,19 @@ import platform
 
 EXE_NAME = ""
 MODULE_NAME = ""
-RESOURCES = Path(f"{MODULE_NAME}/resources").resolve()
-DIST = Path("dist").resolve()
+BOOT_SCRIPT = ["main.py"]
+EXTRAS_LIST = [
+    Path(f"{MODULE_NAME}/resources").resolve()
+    # More here...
+]
+ICON = None
+HIDDEN_IMPORTS = []
 
 ########################
 ### BEFORE PACKAGING ###
 ########################
 
+DIST = Path("dist").resolve()
 if DIST.exists():
     rmtree(DIST)
 
@@ -30,11 +35,11 @@ if DIST.exists():
 #################
 
 analysis = Analysis(
-    scripts=['main.py'],
+    scripts=BOOT_SCRIPT,
     pathex=[path.abspath('.')],
     binaries=None,
     datas=[],
-    hiddenimports=[],
+    hiddenimports=HIDDEN_IMPORTS,
     hookspath=None,
     hooksconfig=None,
     excludes=None,
@@ -63,7 +68,7 @@ exe = EXE(
     disable_windowed_traceback = False,
     debug=False,
     name=EXE_NAME,
-    icon='icon.ico',
+    icon=ICON,
     version=None,
     manifest=None,
     embed_manifest=True,
@@ -87,5 +92,6 @@ exe = EXE(
 ### AFTER PACKAGING ###
 #######################
 
-if RESOURCES.exists():
-    copytree(resources, dist / "resources", dirs_exist_ok=True)
+for extra in EXTRAS_LIST:
+    if extra.exists():
+        copytree(extra, DIST / extra.name, dirs_exist_ok=True)

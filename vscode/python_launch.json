@@ -44,7 +44,7 @@
             "name": "pyinstaller",
             "type": "node-terminal",
             "request": "launch",
-            "command": "pyinstaller make.spec",
+            "command": "pyinstaller pyinstaller.spec",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
             }
