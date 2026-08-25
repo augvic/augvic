@@ -3,9 +3,10 @@
     "configurations": [
         {
             "name": "run",
-            "type": "node-terminal",
+            "type": "debugpy",
             "request": "launch",
-            "command": "python -m <module>",
+            "module": "fd32_updater",
+            "args": [],
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
             }
