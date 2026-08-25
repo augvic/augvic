@@ -3,28 +3,15 @@
     "configurations": [
         {
             "name": "run",
-            "type": "debugpy",
+            "type": "node-terminal",
             "request": "launch",
-            "module": "src",
-            "args": [],
-            "console": "integratedTerminal",
+            "command": "python -m <module>",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
             }
         },
         {
-            "name": "execute_test",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "tests",
-            "args": [],
-            "console": "integratedTerminal",
-            "env": {
-                "PYTHONDONTWRITEBYTECODE": "1"
-            }
-        },
-        {
-            "name": "execute_current_file",
+            "name": "current_file",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
@@ -65,7 +52,7 @@
             "name": "pipreqs",
             "type": "node-terminal",
             "request": "launch",
-            "command": "pipreqs ./src --force --encoding=utf8",
+            "command": "pipreqs ./<module> --force --encoding=utf8",
             "env": {
                 "PYTHONDONTWRITEBYTECODE": "1"
             }

@@ -14,7 +14,7 @@
         "dtos": "class",
         "build": "tools",
         "adapters": "connection",
-        "infrastructures": "server",
+        "infra_components": "server",
         "automations": "robot"
     },
     "material-icon-theme.files.associations": {

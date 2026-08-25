@@ -422,11 +422,13 @@ repositories/
 
 These normally represent collections of peer components.
 
-## ⚠️ Not Every Collection Has a Plural Form
+## ⚠️ Every Collection Directory Must Read as Plural
 
-The singular/plural distinction is **semantic, not grammatical**.
+Grammatical number in a directory name is a **signal**: seeing a plural folder tells you "this is a bag of peer components" before you open a single file. That signal only works if it is applied consistently. So, unlike a purely descriptive convention, COA treats this as a rule with no silent exceptions:
 
-Some concepts naturally have a plural form:
+> **If a directory is a collection or category of components, its name must read as plural — even when the natural word for that category has no plural form.**
+
+Some concepts naturally have a plural form, and those are trivial:
 
 ```text
 model     → models
@@ -435,21 +437,16 @@ handler   → handlers
 route     → routes
 ```
 
-However, some concepts are naturally used as **uncountable nouns, category names, technical terms, or acronyms without a useful plural form**.
-
-For example:
+Other concepts are naturally **uncountable nouns, category names, technical terms, or acronyms** with no convenient plural — `infrastructure`, `middleware`, `security`, `ipc`, `configuration`. That is not a reason to leave the folder looking singular. Instead, **compose** the name with a plural head noun so it still reads unmistakably as a collection:
 
 ```text
-infrastructure/
-middleware/
-ipc/
-security/
-configuration/
+infrastructure  →  infra_components/
+middleware      →  middleware_components/
+ipc             →  ipc_components/
+security        →  security_components/
 ```
 
-These may represent **collections or categories of components**, even though their names are not grammatically plural.
-
-For example:
+For example, instead of:
 
 ```text
 infrastructure/
@@ -458,49 +455,87 @@ infrastructure/
 └── storage.py
 ```
 
-This is a collection of infrastructure components.
-
-Likewise:
+name it:
 
 ```text
-middleware/
-├── authentication.py
-├── logging.py
-└── compression.py
+infra_components/
+├── database.py
+├── messaging.py
+└── storage.py
 ```
 
-`middleware/` is a collection/category of components even though it is not a plural noun.
-
-The same applies to technical acronyms:
+which reads unambiguously as:
 
 ```text
-ipc/
+InfraComponents
+├── Database
+├── Messaging
+└── Storage
+```
+
+The same applies to a technical acronym:
+
+```text
+ipc_components/
 ├── shared_memory.py
 ├── pipe.py
 └── socket.py
 ```
 
-`ipc/` represents a category containing multiple components related to Inter-Process Communication.
+`ipc_components/` still represents a category of components related to Inter-Process Communication — but now the folder name itself, read on its own, says "collection" instead of leaving that to be inferred from context.
 
-Therefore:
+Any consistent plural-forming composition works (`_components`, `_modules`, `_items`, `_kit`, or whatever suffix fits the codebase's voice) — what matters is that the result reads as plural. Never settle for a bare singular or uncountable word on a folder that holds multiple peer components.
+
+## ⚠️ Words That Sound Plural But Name One Component
+
+The same problem happens in reverse: some words *look* plural but actually describe a single component with internal structure, not a collection of peers. The clearest example is `settings` — a `Settings` object usually holds one bag of related fields belonging to *one* configurable thing, not many independent peer components:
 
 ```text
-Singular name
-    ↓
-Usually represents one conceptual component
-
-Plural name
-    ↓
-Usually represents a collection of peer components
-
-Non-plural category name
-    ↓
-May also represent a collection of components
+settings/            ⚠️ reads like a collection, but is really ONE component
+├── settings.py
+├── validation.py
+└── persistence.py
 ```
 
-> 🧠 **Do not force a word into a plural form just to satisfy the convention.**
+Read literally, `settings/` implies "here are the settings" — a collection. But the folder is actually the `Settings` component split across files; `validation.py` and `persistence.py` are its internal helpers, not peer components. This must be fixed the same way as the previous case, just in the opposite direction:
 
-If a concept naturally functions as a category, technical domain, acronym, or uncountable noun, its natural name should be preserved.
+**1. Use a naturally singular synonym**, if one fits the domain:
+
+```text
+configuration/
+├── configuration.py
+├── validation.py
+└── persistence.py
+```
+
+**2. Compose the name with a singular head noun**, if the word `settings` itself should be kept:
+
+```text
+settings_component/
+├── settings_component.py
+├── validation.py
+└── persistence.py
+```
+
+Either way, the folder name must not read as plural when it is really one component.
+
+## 🧭 The Full Rule
+
+Apply the same test in both directions — ask "one component, or a collection of peers?" — and then make the **name itself** say so unambiguously, composing a name if the natural word points the wrong way:
+
+```text
+One component
+    ↓
+Name MUST read as singular
+(compose if the natural word sounds plural, e.g. settings_component/)
+
+Collection of peer components
+    ↓
+Name MUST read as plural
+(compose if the natural word has no plural, e.g. infra_components/)
+```
+
+> 🧠 **Grammatical number in a directory name is not decoration — it is a contract.** A reader (human or AI) should be able to trust it without opening a single file. Never leave that contract ambiguous just because the natural word doesn't have a convenient plural or singular form; compose a name that does.
 
 For example:
 
@@ -510,27 +545,27 @@ project/
 ├── database/
 ├── models/
 ├── services/
-├── infrastructure/
-├── middleware/
-└── ipc/
+├── infra_components/
+├── middleware_components/
+└── ipc_components/
 ```
 
 can be interpreted as:
 
 ```text
 Project
-├── Api              ← component
-├── Database         ← component
-├── Models           ← collection
-├── Services         ← collection
-├── Infrastructure   ← collection/category
-├── Middleware       ← collection/category
-└── IPC              ← collection/category
+├── Api                     ← component
+├── Database                ← component
+├── Models                  ← collection
+├── Services                ← collection
+├── InfraComponents         ← collection
+├── MiddlewareComponents    ← collection
+└── IpcComponents           ← collection
 ```
 
-The architectural meaning takes precedence over grammatical number.
+The architectural meaning still takes precedence over the dictionary — but now grammar itself is made to follow that meaning, through composition when necessary, instead of being allowed to diverge from it.
 
-> **Architecture should follow meaning, not grammar.**
+> **Architecture should follow meaning — and folder names should be composed, when necessary, so that grammar always follows meaning too.**
 
 ---
 
