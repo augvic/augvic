@@ -95,3 +95,37 @@ exe = EXE(
 for extra in EXTRAS_LIST:
     if extra.exists():
         copytree(extra, DIST / extra.name, dirs_exist_ok=True)
+
+#########################
+### RELEASE PACKAGING ###
+#########################
+
+RELEASES_DIR.mkdir(exist_ok=True)
+def with_retry(fn, attempts=150, delay_seconds=2):
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except PermissionError:
+            if attempt == attempts:
+                raise
+            if attempt % 10 == 0:
+                print(f"Aguardando lock liberar (tentativa {attempt}/{attempts})...")
+            time.sleep(delay_seconds)
+
+def next_release_tag() -> str:
+    versions = []
+    for zip_path in RELEASES_DIR.glob("*.zip"):
+        match = re.match(r"^v(\d+)\.(\d+)\.(\d+)\.zip$", zip_path.name)
+        if match:
+            versions.append(tuple(int(part) for part in match.groups()))
+
+    if not versions:
+        return "v1.0.0"
+
+    major, minor, patch = max(versions)
+    return f"v{major}.{minor}.{patch + 1}"
+
+tag = next_release_tag()
+zip_path = with_retry(lambda: Path(make_archive(str(Path(tag).resolve()), "zip", root_dir=str(DIST))))
+with_retry(lambda: move(str(zip_path), str(RELEASES_DIR / zip_path.name)))
+print(f"Release empacotado: releases/{zip_path.name}")
