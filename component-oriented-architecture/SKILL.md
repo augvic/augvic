@@ -1368,7 +1368,7 @@ JavaScript:
 
 ```text
 models/
-├── init.js
+├── index.js
 ├── model_1.js
 ├── model_2.js
 ├── model_3.js
