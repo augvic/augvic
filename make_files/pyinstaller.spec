@@ -6,7 +6,9 @@ from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
 from os import path
 from pathlib import Path
-from shutil import copytree, rmtree
+from shutil import copy2, copytree, rmtree, make_archive, move
+import re
+import time
 
 #####################
 ### CONFIGURATION ###
@@ -16,10 +18,9 @@ EXE_NAME = ""
 MODULE_NAME = ""
 BOOT_SCRIPT = ["main.py"]
 EXTRAS_LIST = [
-    Path(f"{MODULE_NAME}/resources").resolve()
-    # More here...
+    {"src": Path(f"{MODULE_NAME}/resources").resolve(), "dest_name": ""}
 ]
-ICON = None
+ICON = "icon.ico"
 HIDDEN_IMPORTS = []
 
 ########################
@@ -27,6 +28,7 @@ HIDDEN_IMPORTS = []
 ########################
 
 DIST = Path("dist").resolve()
+RELEASES_DIR = Path("releases").resolve()
 if DIST.exists():
     rmtree(DIST)
 
@@ -93,8 +95,16 @@ exe = EXE(
 #######################
 
 for extra in EXTRAS_LIST:
-    if extra.exists():
-        copytree(extra, DIST / extra.name, dirs_exist_ok=True)
+    src = extra["src"]
+    if not src.exists():
+        hint = extra.get("hint")
+        raise FileNotFoundError(f"{src} não encontrado{f' - {hint}' if hint else '.'}")
+    dest = DIST / (extra.get("dest_name") or src.name)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.is_dir():
+        copytree(src, dest, dirs_exist_ok=True)
+    else:
+        copy2(src, dest)
 
 #########################
 ### RELEASE PACKAGING ###
@@ -118,10 +128,8 @@ def next_release_tag() -> str:
         match = re.match(r"^v(\d+)\.(\d+)\.(\d+)\.zip$", zip_path.name)
         if match:
             versions.append(tuple(int(part) for part in match.groups()))
-
     if not versions:
         return "v1.0.0"
-
     major, minor, patch = max(versions)
     return f"v{major}.{minor}.{patch + 1}"
 

@@ -10,10 +10,9 @@ const releasesDir = path.join(rootDir, 'releases')
 const TRANSIENT_LOCK_CODES = new Set(['EPERM', 'EBUSY', 'ENOTEMPTY'])
 const EXTRAS = [
   {
-    src: path.join(rootDir, ''),
-    destName: '',
-    requiredFile: '',
-    hint: ''
+    src: path.join(rootDir, '..', 'ci-app-backend', 'dist'),
+    destName: 'backend',
+    hint: 'rode o build do backend primeiro (pyinstaller pyinstaller.spec em ci-app-backend).'
   }
 ]
 
@@ -42,19 +41,20 @@ function moveUnpackedToDist() {
 
 function copyExtrasIntoResources() {
   const resourcesDir = path.join(distDir, 'resources')
-  for (const extra of EXTRAS) {
-    const relSrc = path.relative(rootDir, extra.src)
-    if (!fs.existsSync(extra.src) || (extra.requiredFile && !fs.existsSync(path.join(extra.src, extra.requiredFile)))) {
-      const missing = extra.requiredFile ? path.join(relSrc, extra.requiredFile) : relSrc
-      throw new Error(`${missing} não encontrado${extra.hint ? ` - ${extra.hint}` : '.'}`)
+  EXTRAS.forEach((extra, index) => {
+    if (!fs.existsSync(extra.src)) {
+      const relSrc = path.relative(rootDir, extra.src)
+      throw new Error(`${relSrc} não encontrado${extra.hint ? ` - ${extra.hint}` : '.'}`)
     }
-    const stagedDir = path.join(resourcesDir, `_staging_${extra.destName}`)
-    const finalDir = path.join(resourcesDir, extra.destName)
-    withRetry(() => fs.rmSync(finalDir, { recursive: true, force: true }))
-    withRetry(() => fs.rmSync(stagedDir, { recursive: true, force: true }))
-    withRetry(() => fs.cpSync(extra.src, stagedDir, { recursive: true }))
-    withRetry(() => fs.renameSync(stagedDir, finalDir))
-  }
+    const isDirectory = fs.statSync(extra.src).isDirectory()
+    const finalPath = path.join(resourcesDir, extra.destName || path.basename(extra.src))
+    const stagedPath = path.join(resourcesDir, `_staging_${index}`)
+    withRetry(() => fs.rmSync(finalPath, { recursive: true, force: true }))
+    withRetry(() => fs.rmSync(stagedPath, { recursive: true, force: true }))
+    withRetry(() => fs.cpSync(extra.src, stagedPath, { recursive: isDirectory }))
+    withRetry(() => fs.mkdirSync(path.dirname(finalPath), { recursive: true }))
+    withRetry(() => fs.renameSync(stagedPath, finalPath))
+  })
 }
 
 function currentVersionTag() {
