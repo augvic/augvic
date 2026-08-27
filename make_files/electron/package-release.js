@@ -10,9 +10,9 @@ const releasesDir = path.join(rootDir, 'releases')
 const TRANSIENT_LOCK_CODES = new Set(['EPERM', 'EBUSY', 'ENOTEMPTY'])
 const EXTRAS = [
   {
-    src: path.join(rootDir, '..', 'ci-app-backend', 'dist'),
-    destName: 'backend',
-    hint: 'rode o build do backend primeiro (pyinstaller pyinstaller.spec em ci-app-backend).'
+    src: path.join(rootDir, ''),
+    destName: '',
+    hint: ''
   }
 ]
 
