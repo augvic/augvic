@@ -1,20 +1,12 @@
 const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
-const archiver = require('archiver')
 const rootDir = path.join(__dirname, '..')
 const releaseDir = path.join(rootDir, 'release')
 const unpackedDir = path.join(releaseDir, 'win-unpacked')
 const distDir = path.join(rootDir, 'dist')
 const releasesDir = path.join(rootDir, 'releases')
 const TRANSIENT_LOCK_CODES = new Set(['EPERM', 'EBUSY', 'ENOTEMPTY'])
-const EXTRAS = [
-  {
-    src: path.join(rootDir, ''),
-    destName: '',
-    hint: ''
-  }
-]
 
 function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
@@ -32,62 +24,41 @@ function withRetry(fn, { attempts = 150, delayMs = 2000 } = {}) {
   }
 }
 
-function moveUnpackedToDist() {
-  const tempDir = path.join(rootDir, 'win-unpacked')
-  withRetry(() => fs.renameSync(unpackedDir, tempDir))
-  withRetry(() => fs.rmSync(releaseDir, { recursive: true, force: true }))
-  withRetry(() => fs.renameSync(tempDir, distDir))
-}
-
-function copyExtrasIntoResources() {
-  const resourcesDir = path.join(distDir, 'resources')
-  EXTRAS.forEach((extra, index) => {
-    if (!fs.existsSync(extra.src)) {
-      const relSrc = path.relative(rootDir, extra.src)
-      throw new Error(`${relSrc} não encontrado${extra.hint ? ` - ${extra.hint}` : '.'}`)
-    }
-    const isDirectory = fs.statSync(extra.src).isDirectory()
-    const finalPath = path.join(resourcesDir, extra.destName || path.basename(extra.src))
-    const stagedPath = path.join(resourcesDir, `_staging_${index}`)
-    withRetry(() => fs.rmSync(finalPath, { recursive: true, force: true }))
-    withRetry(() => fs.rmSync(stagedPath, { recursive: true, force: true }))
-    withRetry(() => fs.cpSync(extra.src, stagedPath, { recursive: isDirectory }))
-    withRetry(() => fs.mkdirSync(path.dirname(finalPath), { recursive: true }))
-    withRetry(() => fs.renameSync(stagedPath, finalPath))
-  })
-}
-
-function currentVersionTag() {
-  fs.mkdirSync(releasesDir, { recursive: true })
+function currentVersion() {
   const { version } = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'))
-  return `v${version}`
+  return version
 }
 
 function bumpPackageVersion() {
   execSync('npm --no-git-tag-version version patch', { cwd: rootDir, stdio: 'ignore' })
 }
 
-function zipDistContents(tag) {
-  const zipPath = path.join(rootDir, `${tag}.zip`)
-  return new Promise((resolve, reject) => {
-    const output = fs.createWriteStream(zipPath)
-    const archive = archiver('zip', { zlib: { level: 9 } })
-    output.on('close', () => resolve(zipPath))
-    archive.on('error', reject)
-    archive.pipe(output)
-    archive.directory(distDir, false)
-    archive.finalize()
-  })
+function moveUnpackedToDist() {
+  const tempDir = path.join(rootDir, 'win-unpacked')
+  withRetry(() => fs.renameSync(unpackedDir, tempDir))
+  withRetry(() => fs.renameSync(tempDir, distDir))
 }
 
-async function main() {
+function moveInstallerToReleases(version) {
+  const installerName = `v${version}.exe`
+  const installerPath = path.join(releaseDir, installerName)
+  if (!fs.existsSync(installerPath)) {
+    throw new Error(`${path.relative(rootDir, installerPath)} não encontrado - o build (npm run dist) rodou?`)
+  }
+  withRetry(() => fs.mkdirSync(releasesDir, { recursive: true }))
+  const destPath = path.join(releasesDir, installerName)
+  withRetry(() => fs.rmSync(destPath, { force: true }))
+  withRetry(() => fs.renameSync(installerPath, destPath))
+  return installerName
+}
+
+function main() {
+  const version = currentVersion()
   moveUnpackedToDist()
-  copyExtrasIntoResources()
-  const tag = currentVersionTag()
-  const zipPath = await zipDistContents(tag)
-  withRetry(() => fs.renameSync(zipPath, path.join(releasesDir, path.basename(zipPath))))
+  const installerName = moveInstallerToReleases(version)
+  withRetry(() => fs.rmSync(releaseDir, { recursive: true, force: true }))
   bumpPackageVersion()
-  console.log(`Release empacotado: releases/${path.basename(zipPath)}`)
+  console.log(`Release empacotado: releases/${installerName} (portable em dist/)`)
 }
 
 main()
