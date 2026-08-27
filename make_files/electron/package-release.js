@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const { execSync } = require('child_process')
 const archiver = require('archiver')
 const rootDir = path.join(__dirname, '..')
 const releaseDir = path.join(rootDir, 'release')
@@ -7,6 +8,14 @@ const unpackedDir = path.join(releaseDir, 'win-unpacked')
 const distDir = path.join(rootDir, 'dist')
 const releasesDir = path.join(rootDir, 'releases')
 const TRANSIENT_LOCK_CODES = new Set(['EPERM', 'EBUSY', 'ENOTEMPTY'])
+const EXTRAS = [
+  {
+    src: path.join(rootDir, ''),
+    destName: '',
+    requiredFile: '',
+    hint: ''
+  }
+]
 
 function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
@@ -31,17 +40,31 @@ function moveUnpackedToDist() {
   withRetry(() => fs.renameSync(tempDir, distDir))
 }
 
-function nextReleaseTag() {
+function copyExtrasIntoResources() {
+  const resourcesDir = path.join(distDir, 'resources')
+  for (const extra of EXTRAS) {
+    const relSrc = path.relative(rootDir, extra.src)
+    if (!fs.existsSync(extra.src) || (extra.requiredFile && !fs.existsSync(path.join(extra.src, extra.requiredFile)))) {
+      const missing = extra.requiredFile ? path.join(relSrc, extra.requiredFile) : relSrc
+      throw new Error(`${missing} não encontrado${extra.hint ? ` - ${extra.hint}` : '.'}`)
+    }
+    const stagedDir = path.join(resourcesDir, `_staging_${extra.destName}`)
+    const finalDir = path.join(resourcesDir, extra.destName)
+    withRetry(() => fs.rmSync(finalDir, { recursive: true, force: true }))
+    withRetry(() => fs.rmSync(stagedDir, { recursive: true, force: true }))
+    withRetry(() => fs.cpSync(extra.src, stagedDir, { recursive: true }))
+    withRetry(() => fs.renameSync(stagedDir, finalDir))
+  }
+}
+
+function currentVersionTag() {
   fs.mkdirSync(releasesDir, { recursive: true })
-  const versions = fs
-    .readdirSync(releasesDir)
-    .map((name) => name.match(/^v(\d+)\.(\d+)\.(\d+)\.zip$/))
-    .filter(Boolean)
-    .map((match) => match.slice(1).map(Number))
-    .sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
-  if (versions.length === 0) return 'v1.0.0'
-  const [major, minor, patch] = versions[versions.length - 1]
-  return `v${major}.${minor}.${patch + 1}`
+  const { version } = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'))
+  return `v${version}`
+}
+
+function bumpPackageVersion() {
+  execSync('npm --no-git-tag-version version patch', { cwd: rootDir, stdio: 'ignore' })
 }
 
 function zipDistContents(tag) {
@@ -59,9 +82,11 @@ function zipDistContents(tag) {
 
 async function main() {
   moveUnpackedToDist()
-  const tag = nextReleaseTag()
+  copyExtrasIntoResources()
+  const tag = currentVersionTag()
   const zipPath = await zipDistContents(tag)
   withRetry(() => fs.renameSync(zipPath, path.join(releasesDir, path.basename(zipPath))))
+  bumpPackageVersion()
   console.log(`Release empacotado: releases/${path.basename(zipPath)}`)
 }
 
