@@ -55,11 +55,11 @@ project/                         # ← Development Level / Repository Root
 ├── .gitignore
 ├── .gitattributes
 ├── pyinstaller.spec
-├── main.py
 ├── build/
 ├── dist/
 └── project/                     # ← Program Level / Application
     ├── project.py
+    ├── __main__.py
     ├── api/
     ├── database/
     ├── configuration/
@@ -119,9 +119,9 @@ Inside the repository, the program itself has its own component hierarchy:
 project/
 ├── requirements.txt
 ├── pyinstaller.spec
-├── main.py
 └── project/
     ├── project.py
+    ├── __main__.py
     ├── api/
     ├── database/
     ├── configuration/
@@ -1349,42 +1349,222 @@ Comments should be the **exception**, not the primary mechanism for explaining t
 
 ---
 
-# 16. 📦 Use Language Features for Component Exports
+# 16. 📦 Direct Imports Over Export Aggregation
 
-When the language provides a standard mechanism for exposing components from a package or directory, use it.
+COA does not require or encourage creating an additional export layer merely to re-export components from a directory.
 
-For example, Python:
+Some languages provide mechanisms for defining a directory's public exports, such as Python's `__init__.py` or JavaScript's `index.js`. These mechanisms can be useful in some architectures, but COA does not make them part of the architectural pattern.
+
+The preferred approach is to **import the component directly from the file that defines it**.
+
+## 🔄 Avoid Double Work
+
+Consider a Python package:
 
 ```text
 models/
 ├── __init__.py
-├── model_1.py
-├── model_2.py
-├── model_3.py
-└── model_4.py
+├── user.py
+├── product.py
+└── order.py
 ```
 
-JavaScript:
+An export-oriented approach might require maintaining `__init__.py`:
+
+```python
+from .user import User
+from .product import Product
+from .order import Order
+```
+
+Then other components import from the package:
+
+```python
+from .models import (
+    User,
+    Product,
+    Order,
+)
+```
+
+This creates two places that need to be maintained:
+
+```text
+user.py
+    ↓
+__init__.py
+    ↓
+consumer
+```
+
+When a component is added, renamed, or removed, the export file may also need to be updated.
+
+COA instead prefers importing the component directly:
+
+```python
+from .models.user import User
+from .models.product import Product
+from .models.order import Order
+```
+
+The dependency is now explicit:
+
+```text
+consumer
+   │
+   ├──→ models/user.py
+   ├──→ models/product.py
+   └──→ models/order.py
+```
+
+There is no intermediate export layer to maintain.
+
+## 🧭 The Import Should Show Where the Component Lives
+
+A direct import communicates both the component and its location:
+
+```python
+from .models.user import User
+```
+
+This tells the reader immediately:
+
+> `User` is defined in `models/user`.
+
+Likewise:
+
+```python
+from .api.routes.authentication.login import Login
+```
+
+makes the component's architectural location explicit.
+
+This is consistent with the COA principle that the filesystem is an architectural map.
+
+> 🌳 **If the filesystem communicates the architecture, imports should not hide that structure unnecessarily.**
+
+## 🚫 Do Not Create an Export Layer Just for Convenience
+
+Avoid creating:
 
 ```text
 models/
-├── index.js
-├── model_1.js
-├── model_2.js
-├── model_3.js
-└── model_4.js
+├── __init__.py
+├── user.py
+├── product.py
+└── order.py
 ```
 
-The purpose is to provide a clean public boundary for the collection.
-
-For example:
+solely so consumers can write:
 
 ```python
-from .model_1 import Model1
-from .model_2 import Model2
+from .models import User, Product, Order
 ```
 
-The internal filesystem can remain detailed while the external interface remains simple.
+when the same dependency can be expressed directly:
+
+```python
+from .models.user import User
+from .models.product import Product
+from .models.order import Order
+```
+
+The shorter import is not necessarily the clearer import.
+
+COA favors **explicitness over indirection**.
+
+## 🌐 Language-Agnostic Principle
+
+Not every programming language provides an export mechanism like Python's `__init__.py` or JavaScript's `index.js`.
+
+Therefore, COA should not depend on such a feature.
+
+The architectural principle is language-independent:
+
+> **Import or reference the component directly from its source location whenever the language supports doing so naturally.**
+
+If a language provides only direct file/module imports, use them directly.
+
+If another language provides an export mechanism, it does not need to be introduced merely to satisfy COA.
+
+The architecture should remain valid even when the language has no equivalent feature.
+
+## 🧩 Exports Are an Implementation Feature, Not an Architectural Requirement
+
+A package export mechanism is a **language/module-system feature**, not a requirement of component-oriented architecture.
+
+COA cares about:
+
+```text
+Component
+    ↓
+Location
+    ↓
+Dependency
+```
+
+It does not require:
+
+```text
+Component
+    ↓
+Export file
+    ↓
+Package
+    ↓
+Dependency
+```
+
+unless there is a genuine architectural reason for that additional boundary.
+
+This keeps the component dependency graph straightforward:
+
+```text
+Project
+│
+├──→ Api
+├──→ Database
+└──→ Configuration
+```
+
+rather than introducing unnecessary indirection:
+
+```text
+Project
+│
+└──→ Package Export
+       │
+       ├──→ Api
+       ├──→ Database
+       └──→ Configuration
+```
+
+## 🧠 The COA Principle
+
+The rule is therefore:
+
+> 📦 **Do not create an export/re-export layer merely to shorten imports. Prefer direct imports from the file that defines the component.**
+
+This reduces duplicated declarations, avoids unnecessary indirection, and keeps the relationship between the code and the filesystem explicit.
+
+```text
+Direct:
+
+consumer
+   │
+   └──→ component file
+
+
+Avoid unnecessary indirection:
+
+consumer
+   │
+   └──→ export file
+           │
+           └──→ component file
+```
+
+> 💡 **One component, one source of truth, one direct dependency.**
 
 ---
 
