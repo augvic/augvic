@@ -79,12 +79,8 @@
     "python.analysis.typeCheckingMode": "strict",
     "terminal.integrated.stickyScroll.enabled": false,
     "chat.tips.enabled": false,
-    "github.copilot.enable": {
-        "*": false,
-        "plaintext": false,
-        "markdown": false,
-        "scminput": false
-    },
     "chat.viewSessions.orientation": "stacked",
-    "python.analysis.diagnosticsSource": "Pylance"
+    "python.analysis.diagnosticsSource": "Pylance",
+    "chat.titleBar.signIn.enabled": false,
+    "chat.titleBar.openInAgentsWindow.enabled": false
 }
