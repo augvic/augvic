@@ -4,6 +4,7 @@
 
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import EXE, PYZ
+from PyInstaller.config import CONF
 from os import path
 from pathlib import Path
 from shutil import copy2, copytree, rmtree, make_archive, move
@@ -14,11 +15,13 @@ import time
 ### CONFIGURATION ###
 #####################
 
+ZIP_RELEASE = False
+DIST_FOLDER_NAME = ""
 EXE_NAME = ""
-MODULE_NAME = ""
-BOOT_SCRIPT = ["main.py"]
+MODULE_NAME_TARGET = ""
+BOOT_SCRIPT = ["build.py"]
 EXTRAS_LIST = [
-    {"src": Path(f"{MODULE_NAME}/resources").resolve(), "dest_name": ""}
+    {"src": Path(f"{MODULE_NAME_TARGET}/resources").resolve(), "dest_name": ""}
 ]
 ICON = "icon.ico"
 HIDDEN_IMPORTS = []
@@ -27,10 +30,11 @@ HIDDEN_IMPORTS = []
 ### BEFORE PACKAGING ###
 ########################
 
-DIST = Path("dist").resolve()
+DIST = Path(DIST_FOLDER_NAME).resolve()
 RELEASES_DIR = Path("releases").resolve()
 if DIST.exists():
     rmtree(DIST)
+CONF['distpath'] = str(DIST)
 
 #################
 ### PACKAGING ###
@@ -110,30 +114,31 @@ for extra in EXTRAS_LIST:
 ### RELEASE PACKAGING ###
 #########################
 
-RELEASES_DIR.mkdir(exist_ok=True)
-def with_retry(fn, attempts=150, delay_seconds=2):
-    for attempt in range(1, attempts + 1):
-        try:
-            return fn()
-        except PermissionError:
-            if attempt == attempts:
-                raise
-            if attempt % 10 == 0:
-                print(f"Aguardando lock liberar (tentativa {attempt}/{attempts})...")
-            time.sleep(delay_seconds)
+if ZIP_RELEASE:
+    RELEASES_DIR.mkdir(exist_ok=True)
+    def with_retry(fn, attempts=150, delay_seconds=2):
+        for attempt in range(1, attempts + 1):
+            try:
+                return fn()
+            except PermissionError:
+                if attempt == attempts:
+                    raise
+                if attempt % 10 == 0:
+                    print(f"Aguardando lock liberar (tentativa {attempt}/{attempts})...")
+                time.sleep(delay_seconds)
 
-def next_release_tag() -> str:
-    versions = []
-    for zip_path in RELEASES_DIR.glob("*.zip"):
-        match = re.match(r"^v(\d+)\.(\d+)\.(\d+)\.zip$", zip_path.name)
-        if match:
-            versions.append(tuple(int(part) for part in match.groups()))
-    if not versions:
-        return "v1.0.0"
-    major, minor, patch = max(versions)
-    return f"v{major}.{minor}.{patch + 1}"
+    def next_release_tag() -> str:
+        versions = []
+        for zip_path in RELEASES_DIR.glob("*.zip"):
+            match = re.match(r"^v(\d+)\.(\d+)\.(\d+)\.zip$", zip_path.name)
+            if match:
+                versions.append(tuple(int(part) for part in match.groups()))
+        if not versions:
+            return "v1.0.0"
+        major, minor, patch = max(versions)
+        return f"v{major}.{minor}.{patch + 1}"
 
-tag = next_release_tag()
-zip_path = with_retry(lambda: Path(make_archive(str(Path(tag).resolve()), "zip", root_dir=str(DIST))))
-with_retry(lambda: move(str(zip_path), str(RELEASES_DIR / zip_path.name)))
-print(f"Release empacotado: releases/{zip_path.name}")
+    tag = next_release_tag()
+    zip_path = with_retry(lambda: Path(make_archive(str(Path(tag).resolve()), "zip", root_dir=str(DIST))))
+    with_retry(lambda: move(str(zip_path), str(RELEASES_DIR / zip_path.name)))
+    print(f"Release empacotado: releases/{zip_path.name}")
