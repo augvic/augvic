@@ -1,9 +1,13 @@
 ---
 name: fractal-component-architecture
-description: Apply Fractal Component Architecture (FCA) — a way of structuring, organizing, and wiring together any software project — as a tree of components where a component's children are exactly what sits one directory level beneath it, and every component, leaf or branch, is born as a folder holding an entry point (a class, or the closest idiom the language has) that is either a pure container for its children or an active component with its own code — never a bare file that later migrates into a folder. Materialized for Python (folder-as-package with __init__.py, Protocol-based interfaces, dataclass DTOs), JavaScript/TypeScript, Java, C#, Go, Rust, C++, C, and Ruby. Use when designing or reviewing the architecture of a new project in any language, deciding where a new module/class/file should live, deciding whether a folder needs its own entry point (__init__.py or equivalent) or is just a grouping, wiring dependencies in a composition root, or translating this architecture into a specific language.
+description: Apply Fractal Component Architecture (FCA) — a way of structuring, organizing, and wiring together any software project — as a tree of components where a component's children are exactly what sits one directory level beneath it, and every component, leaf or branch, is born as a folder holding an entry point (a class, or the closest idiom the language has) that is either a pure container for its children or an active component with its own code — never a bare file that later migrates into a folder. Covers the repo-root-vs-software-root distinction (build/test/packaging tooling at the repo root vs. the actual tree living in the folder named after the program) and the strong-typing rule applied throughout. Materialized per language in languages/ — Python (folder-as-package with __init__.py, Protocol-based interfaces, dataclass DTOs), JavaScript/TypeScript, Java, C#, Go, Rust, C++, C, and Ruby. Use when designing or reviewing the architecture of a new project in any language, deciding where a new module/class/file should live, deciding whether a folder needs its own entry point (__init__.py or equivalent) or is just a grouping, deciding what belongs at the repo root versus inside the software's own folder, wiring dependencies in a composition root, or translating this architecture into a specific language.
 ---
 
 # 🌳 Fractal Component Architecture (FCA)
+
+<div align="center">
+  <img src="icon.png" width="140" alt="FCA icon — a fractal hexagon of components nested at every scale" />
+</div>
 
 # 1. 🎯 Purpose
 
@@ -56,6 +60,29 @@ A component's children are exactly the things that sit **one level directly bene
 This one rule is what makes the architecture readable without documentation: nobody needs a diagram maintained separately from the code, because the diagram *is* the directory tree, and it can never silently drift out of date — the moment a dependency changes, the file it lives in has to move too, or the rule has been broken.
 
 > 🌳 **A component's home on disk is its position in the tree. If you can't answer "who is this component's parent" by looking at which folder it sits in, the tree has already stopped being trustworthy.**
+
+## 2.1 📂 The Repo Root Is Not the Tree's Root
+
+A repository holds more than the software: build configuration, tests, packaging scripts, dependency lockfiles, CI pipelines, generated output. None of that is the tree §2 describes — it is the **development level**, everything that exists to build, verify, package, and ship the software, sitting *around* it. The tree's actual root — the "Program" box at the top of §2's diagram, the composition root (§7) — is one specific folder inside the repo, named after the program itself, and nothing outside that folder is part of the architecture.
+
+```text
+myapp/                       ← repo root: the DEVELOPMENT level
+├── myapp/                   ← the SOFTWARE itself: the tree's real root (§2's "Program")
+│   ├── actions/
+│   │   └── create_registration/
+│   └── api/
+│       └── routes/
+├── tests/                   ← verifies the software; is not part of it
+├── scripts/                 ← one-off maintenance/ops scripts, not application code
+├── migrations/              ← schema evolution history, not the running architecture
+├── dist/  build/            ← build output, always generated, never authored
+├── package.json  requirements.txt  pyinstaller.spec   ← how to build/run it
+└── Dockerfile  .gitlab-ci.yml  k8s/                    ← how to ship it
+```
+
+Everything at the repo root that is not the program's own folder answers "how is this built, tested, or shipped?" — never "what does this system do?". Mixing the two levels is what makes a repo root feel cluttered and, worse, makes `ls -R` at the top level lie about the architecture: a `tests/` or `dist/` folder sitting as a sibling of `actions/` and `api/` reads as if it were a child of the same "Program" node, when it is not part of the tree at all. Keeping the software confined to its own named folder is what lets §2's rule — *depth on disk is depth in the dependency graph* — stay true starting from the very first level, instead of needing an implicit "ignore these folders" carve-out.
+
+> 📂 **If a file exists to build, test, or ship the software rather than to BE the software, it belongs at the repo root, outside the program's own folder — never mixed in as a sibling of a real component.**
 
 # 3. 🍃 The Two Node Shapes: Leaf and Branch
 
@@ -160,6 +187,19 @@ Do not confuse this exception with "this leaf only has one small operation, so i
 ## 5.2 Constants Are Data, Not Components
 
 A file of pure constant/lookup values — enum-like data, a list of allowed strings, default configuration values — is data, not a component with behavior. Nothing about "every leaf is a behavioral unit" implies wrapping a plain constant in a class for its own sake; the naming convention in §6 already treats constants files as the one exception to "file name = unit name."
+
+## 5.3 🏷️ Strong Typing, Always
+
+Every component's public surface is explicitly, strongly typed: a leaf's constructor parameters and method signatures (§5), an abstract dependency's contract (§8), a data carrier's fields (§10) — nothing left as an untyped/dynamic value on the assumption that "it'll obviously be a string" or "the caller knows what to pass." This is not a stylistic preference; it is the same rule as §2's tree, applied to values instead of files. The tree already declares the architecture once, in folder shape; strong typing is a second, mechanically-checked copy of that same declaration, so a wrong dependency wired at the composition root (§7), or a caller passing the wrong data carrier, is caught before the program runs rather than discovered later by a test, or by a user.
+
+Every language here gives you *some* form of this — a real static type system, or a type checker layered on top of a dynamic one — and every language also offers at least one escape hatch that quietly opts back out of it: Python's `Any`, TypeScript's `any`, Go's `interface{}` used as a dumping ground instead of a real `interface`, Java/C#'s raw `object`, C/C++'s `void*` outside the one place it legitimately plays vtable/interface duty (§8). None of these are a convenience to reach for — each one is a hole in the second copy of the architecture that strong typing exists to provide, and should be treated as a defect to fix, not a shortcut to take. §16 shows the idiomatic, strictest-available typing mechanism for each language, including the dynamically-typed ones (Ruby, plain JavaScript), where "the language doesn't enforce this" is not a permanent exemption — it just means the discipline has to be adopted deliberately (a type checker, a typing layer) instead of coming for free.
+
+```text
+❌  function createUser(data)                 // data's shape is a mystery until read
+✅  function createUser(data: CreateUserInput) // the signature IS the contract
+```
+
+> 🏷️ **A component whose signature could accept anything is a component whose contract lives only in a comment, if it lives anywhere at all.**
 
 # 6. 🔤 Naming: The Folder Is the Unit, the Unit Is the Folder
 
@@ -267,9 +307,11 @@ A value that must never be attacker- or user-editable at runtime (an endpoint an
 
 # 15. ✅ Language-Agnostic Checklist
 
+- **Is the repo root kept to development-level concerns**, with the software itself confined to its own program-named folder (§2.1)?
 - **Does the tree read as parent → child, one level at a time?** Nothing should depend two levels down without going through the level in between.
 - **Is every component — leaf or branch — a folder holding its entry point**, never a bare file sitting beside its siblings, even when it has no children yet?
 - **Is every leaf one behavioral unit**, not a loose function standing in for a component?
+- **Is every component's public surface strongly typed**, with no `Any`/`any`/`interface{}`/raw `object` used as a shortcut where a real type or contract belongs (§5.3)?
 - **Does every branch's entry point say honestly whether it's a container or active**, and does the code match that?
 - **Does the file/unit name match, in both directions**, the naming convention in §6?
 - **Does every external-facing leaf have an abstract contract**, and does its consumer depend on the contract, not the concrete class?
@@ -286,148 +328,27 @@ A value that must never be attacker- or user-editable at runtime (an endpoint an
 
 # 16. 🌍 Materializing FCA by Language
 
-The vision above is the same regardless of language. What changes is which native construct plays each role — the closest thing to "a class," whether the module system already treats a folder as a namespace, and whether the language gives you a dedicated entry-point file at all. This section is a map, not a full guide — it tells you where each FCA concept lands, with enough of a worked example to start from.
+The vision above is the same regardless of language. What changes is which native construct plays each role — the closest thing to "a class," whether the module system already treats a folder as a namespace, and whether the language gives you a dedicated entry-point file at all. Each language gets its own file in [`languages/`](languages/), so a project in one language never has to load the others' worked examples to find its own.
 
-## 16.1 🐍 Python
-
-- **Leaf** → one class, its name the `PascalCase` form of the folder's `snake_case` name, defined in that folder's `__init__.py` (`login/__init__.py` → `class Login`) — never a bare `login.py` sitting beside its siblings. Every component is a folder from birth (§3.1), so nothing has to be renamed or re-`import`ed the day it grows children.
-- **Package/folder** → every folder is a package, and every package has an `__init__.py` — no bare grouping directories.
-- **Entry point** → `__init__.py`, the construct `index.ts` and `mod.rs` (§16.2, §16.6) are themselves modeled after in this document. A container branch's `__init__.py` only re-exports:
-
-  ```python
-  # routes/__init__.py — container, no class here
-  from .registration import Registration
-  from .session import Session
-
-  __all__ = ["Registration", "Session"]
-  ```
-
-  An active branch's `__init__.py` holds the class itself, directly — no redundant `api/api.py` repeating the folder's own name:
-
-  ```python
-  # api/__init__.py — active branch
-  from .routes import Routes
-
-  class Api:
-      def __init__(self, routes: Routes) -> None:
-          self.routes = routes
-  ```
-
-- **Abstract dependency** → `typing.Protocol`, satisfied structurally with no explicit inheritance — closest in spirit to Go's implicit interfaces (§16.5).
-- **Data carrier** → a `@dataclass`.
-- **Composition root** → the top-level package's own `__init__.py`, constructing every branch through ordered, explicit steps and injecting dependencies through constructors.
-
-## 16.2 🟨 JavaScript / TypeScript
-
-- **Leaf** → one class, defined in a same-named folder's `index.js`/`index.ts` (`login/index.ts` → `class Login`), never a bare `login.ts` sitting beside its siblings — every component is a folder from birth (§3.1). TypeScript especially benefits (a class gives you the constructor for dependency injection and, combined with `interface`, a real abstract-contract mechanism); plain JavaScript can use a class the same way, with the contract in §8 enforced by convention/JSDoc rather than the compiler.
-- **Entry point** → `index.js` / `index.ts`, the closest exact parallel to Python's `__init__.py` that exists in any mainstream language. A container branch's `index.ts` only re-exports:
-
-  ```typescript
-  // routes/index.ts — container, no class here
-  export { Registration } from './registration';
-  export { Session } from './session';
-  ```
-
-  An active branch's `index.ts` holds the class itself:
-
-  ```typescript
-  // api/index.ts — active branch
-  import { Routes } from './routes';
-
-  export class Api {
-    constructor(private routes: Routes) {}
-  }
-  ```
-
-- **Abstract dependency** → TypeScript `interface`; plain JavaScript relies on structural/duck typing without compiler enforcement.
-- **Data carrier** → a TypeScript `interface`/`type`, or a class with only public readonly fields.
-- **Composition root** → the top-level `index.ts` (or the app's designated entry file), constructing every branch and injecting dependencies through constructors, exactly like Python's top-level `__init__.py`.
-
-## 16.3 ☕ Java
-
-- **Leaf** → a package folder — even for a single class, even before it has any children — holding one `public class` file named for the folder's own role (`login/Login.java` → `class Login`), never a bare `Login.java` sitting directly beside its siblings in the parent package. The language already *enforces* file name = class name; FCA's addition is that this file always lives in its own same-named folder from birth (§3.1), so nothing has to move package when the component later grows children.
-- **Package** → a folder; Java's package system is directory-based and mandatory, an exact native match for "every component = folder."
-- **Entry point** → Java has no `__init__`-equivalent file. A container branch is simply a package folder holding only its children's folders — nothing extra is needed, since `import com.example.api.routes.registration.Registration;` already reaches a child directly with no aggregator in the way. An active branch is a package that also contains one class named for the package's own role (`api/Api.java` defining `class Api`, alongside `api/routes/` for its children) — the class *is* the entry point, there's just no dedicated file name reserved for that role the way `__init__.py` is.
-- **Abstract dependency** → a Java `interface`, implemented explicitly (`implements`).
-- **Data carrier** → a `record` (Java 16+) is the natural fit; a plain immutable class with a constructor otherwise.
-- **Composition root** → the `main` class or a dedicated bootstrap class, typically at the top package, constructing the tree via constructor injection (with or without a DI framework — the manual/explicit version is what FCA asks for by default).
-
-## 16.4 🟦 C# / .NET
-
-Nearly identical to Java's mapping, with .NET's own idioms:
-
-- **Leaf** → a folder — even for a single class, even before it has any children — holding one file, name matching the class (`Login/Login.cs` → `class Login`), never a bare `Login.cs` sitting directly beside its siblings. Modern .NET analyzers and convention already push toward file name = class name; FCA's addition is that this file always lives in its own same-named folder from birth (§3.1).
-- **Namespace/folder** → folder-per-namespace is standard .NET convention (and enforced by default in newer project templates via "file-scoped namespaces matching folder structure").
-- **Entry point** → same situation as Java: no dedicated file plays `__init__.py`'s role. An active branch is a folder containing a class named after the folder's role, alongside its children's folders.
-- **Abstract dependency** → a C# `interface` (`IAuth`, by convention), implemented explicitly.
-- **Data carrier** → a `record` (C# 9+) — built exactly for this purpose.
-- **Composition root** → `Program.cs`/`Startup.cs`, or, in frameworks with a built-in DI container, the service-registration section — still one explicit place declaring the whole tree.
-
-## 16.5 🐹 Go
-
-- **Leaf** → a folder — a one-file Go package, even before it has any children — holding a struct with its methods (receiver functions), plus an `interface` where an abstract dependency (§8) is needed. Go has no classes, but a struct + its methods fills the same role. This is the one language here where §3.1's rule cuts most against the grain of local convention: idiomatic Go tends to group several small leaves as sibling files in one shared package folder rather than give each its own single-file package. FCA still asks for the one-component-per-folder shape for the same reason as every other language — no rename when a leaf later grows children — but expect this to read as unusually fine-grained to a Go developer, and weigh that against the migration cost it avoids before applying it wholesale.
-- **Package = folder** → Go's package system is *natively* folder-based more strongly than any other language here: every file in a directory shares one `package` declaration, and any capitalized identifier defined in *any* file of that folder is automatically part of the package's public surface — there is no separate "entry point file" needed for the re-export role at all. A container branch is simply a folder of sibling packages with no aggregation step required; the language already refuses to make you write one.
-- **Active branch** → convention is a file matching the folder's purpose (`api/api.go` defining `type Api struct {...}`), sitting beside the folder's children packages, mirroring the naming discipline in §6 even though Go doesn't require it.
-- **Abstract dependency** → a Go `interface` — satisfied *implicitly* (no `implements` keyword; any type with matching methods satisfies it automatically), which makes structural typing even more central to Go than to TypeScript.
-- **Data carrier** → a plain struct with exported fields.
-- **Composition root** → typically `main.go` or a `cmd/`-rooted bootstrap package, constructing every dependency explicitly and passing it down through struct fields/constructors (`NewApi(routes)`-style constructor functions, since Go has no real constructors).
-
-## 16.6 🦀 Rust
-
-- **Leaf** → a `struct` with its `impl` block, plus a `trait` where an abstract dependency is needed, living in its own module — even before it has any children (§3.1). Of the two folder-mapping conventions below, the classic `login/mod.rs` form is the one that actually delivers this: the folder exists from the moment the module does, empty children-wise until it earns some. The modern sibling-file form (`login.rs` next to `login/`) doesn't force a folder to exist for a childless leaf at all — pick it only where the team already prefers that style over strict adherence to §3.1's "always a folder."
-- **Module = folder** → Rust's module system maps to folders almost exactly like Python's, and for the same reason: the *classic* convention is a `mod.rs` file living directly inside the folder — a literal, direct parallel to `__init__.py`. Modern Rust (2018 edition onward) prefers a sibling `foldername.rs` next to `foldername/` instead of `foldername/mod.rs`, but the role is identical either way: this is where the branch's own code lives, and/or where `pub mod` / `pub use` declarations expose its children.
-
-  ```rust
-  // api.rs (or api/mod.rs) — active branch
-  mod routes;
-  pub use routes::Routes;
-
-  pub struct Api {
-      routes: Routes,
-  }
-  ```
-
-  ```rust
-  // routes.rs (or routes/mod.rs) — container branch, no struct of its own
-  mod registration;
-  pub use registration::Registration;
-  ```
-
-- **Abstract dependency** → a Rust `trait`, implemented with `impl Trait for Type`; can be consumed statically (generics + trait bounds) or dynamically (`dyn Trait`) depending on whether runtime polymorphism is actually needed.
-- **Data carrier** → a plain `struct` (often `#[derive(Debug, Clone)]`), or an `enum` when the data is naturally one-of-several shapes.
-- **Composition root** → `main.rs`, constructing every struct explicitly and passing dependencies through constructor functions (`Api::new(routes)`).
-
-## 16.7 🔷 C++
-
-- **Leaf** → a folder — even before it has any children — holding one header/source pair (`api_client/api_client.hpp` / `api_client/api_client.cpp`), the closest analogue to "file name = class name" that a two-file-per-unit language allows, applied to a same-named folder from birth (§3.1) rather than sitting bare beside its siblings.
-- **Namespace/folder** → folder-per-namespace by convention (not enforced by the compiler); a build system (CMake target, module) is what actually groups files into a component in practice.
-- **Entry point** → no compiler-enforced equivalent to `__init__.py`, but an umbrella header (`api.hpp`, including/declaring its children) can play the container-branch role, and a free class in that same header/its `.cpp` can play the active-branch role — the same two shapes, expressed through convention rather than language guarantee. C++20 modules (`export module api;`, with `export import routes;` to re-export children) are the more modern, closer equivalent to a real entry-point file where the toolchain supports them.
-- **Abstract dependency** → an abstract base class with pure virtual methods (classic), or a `concept` (C++20) for structural/compile-time-checked contracts without inheritance.
-- **Data carrier** → a plain `struct` with public members and no invariants to maintain.
-- **Composition root** → `main.cpp`, or a dedicated `App`/`Bootstrap` class, constructing the tree explicitly (often via `std::unique_ptr` ownership to make the parent/child relationship visible in the type system too).
-
-## 16.8 🅲 C
-
-- **Leaf** → a folder — even before it has any children — holding a `.c`/`.h` pair implementing one cohesive piece of behavior, modeled as an opaque struct plus a set of functions taking that struct as their first argument (`sap_gui/sap_gui.c`/`.h`, `SapGui`, `sap_gui_create()`, `sap_gui_connect(SapGui*, ...)`) — the closest C gets to "a class." Where runtime polymorphism (an abstract dependency, §8) is genuinely needed, a struct of function pointers plays the role of an interface/vtable.
-- **Folder** → C has no native package system at all; a folder is purely a build-system/organizational convention (a static library target, or just a directory the build tooling knows to compile). This is the one language here where FCA's tree needs the *most* manual discipline to hold, since nothing in the language itself enforces it.
-- **Entry point** → an umbrella header (`api.h`, declaring/including its children's headers) can play the container-branch role by convention; an active branch's umbrella header additionally declares the branch's own struct and functions. There's no compiler distinction between the two shapes — only the header's actual contents communicate which one you're looking at, so comments/naming discipline matter more here than anywhere else in this document.
-- **Data carrier** → a plain `struct` with public fields, no behavior.
-- **Composition root** → `main.c`, constructing every struct explicitly and threading dependencies through function parameters (no language-level constructor to lean on).
-
-## 16.9 💎 Ruby
-
-- **Leaf** → one class per file, exactly like Python's shape — the strict §3.1 version wraps it in a same-named folder anyway (`app/services/login/login.rb` defining `Login`), but this is unusual under Zeitwerk (see below): the framework's own idiom already gives a childless leaf the "no rename on growth" property without a wrapping folder, so many Ruby codebases reasonably keep leaves flat and only fold into a directory once real children arrive.
-- **Namespace = folder** → with Zeitwerk-style autoloading (the modern Ruby/Rails default), a file's path *automatically* determines its constant name — `app/services/api/routes/registration.rb` defines `Api::Routes::Registration` with no explicit `require` needed at all. This is arguably the most automatic, drift-proof version of "the tree on disk is the tree in code" of any language covered here — the framework will refuse to load a misplaced file under the name it expects.
-- **Entry point** → no dedicated file is required for the container-branch role, since autoloading derives everything from the path; where a branch needs to be active, the convention is a file beside the folder, matching its name — `api.rb` defining `class Api`, alongside `api/` for its children, mirroring Go and Rust's sibling-file pattern (and sharing the same trade-off noted there: strict §3.1 compliance means committing to the folder before it holds any children).
-- **Abstract dependency** → Ruby is dynamically typed, so an abstract contract is usually enforced by convention/duck typing rather than the language; where stricter enforcement matters, a `Module` with method stubs that raise `NotImplementedError`, or a static-typing layer (Sorbet, RBS), can play the role §8 describes.
-- **Data carrier** → a `Struct.new(...)` or a small plain class with `attr_reader`s and no behavior beyond that.
-- **Composition root** → a dedicated bootstrap/`Application` class (or, in Rails, an initializer), constructing the tree explicitly and injecting dependencies through `initialize`.
+| # | Language | File | What's distinctive |
+|---|---|---|---|
+| 16.1 | 🐍 Python | [languages/python.md](languages/python.md) | `__init__.py` as the entry point every other language's own convention is modeled after here |
+| 16.2 | 🟨 JavaScript / TypeScript | [languages/javascript-typescript.md](languages/javascript-typescript.md) | `index.ts`, the closest exact parallel to `__init__.py` in any mainstream language |
+| 16.3 | ☕ Java | [languages/java.md](languages/java.md) | package-as-folder is compiler-enforced; no dedicated entry-point file needed |
+| 16.4 | 🟦 C# / .NET | [languages/csharp.md](languages/csharp.md) | nearly identical to Java's mapping, with .NET's own idioms (`record`, nullable reference types) |
+| 16.5 | 🐹 Go | [languages/go.md](languages/go.md) | any file in a folder is already part of that package — no aggregator file exists at all |
+| 16.6 | 🦀 Rust | [languages/rust.md](languages/rust.md) | `mod.rs`, a literal direct parallel to `__init__.py` |
+| 16.7 | 🔷 C++ | [languages/cpp.md](languages/cpp.md) | header/source pairs and an umbrella header standing in for a real entry-point file |
+| 16.8 | 🅲 C | [languages/c.md](languages/c.md) | no package system at all — the tree survives on convention alone |
+| 16.9 | 💎 Ruby | [languages/ruby.md](languages/ruby.md) | Zeitwerk autoloading derives the tree from the path automatically |
 
 # 17. 🏁 Final Principles
 
 - 🌲 **A software system is a tree of components.** The directory structure is not a loose approximation of the architecture — it *is* the architecture.
+- 📂 **The repo root is the development level; the software lives in its own named folder.** Build, test, and packaging concerns surround the tree — they are never siblings inside it.
 - 📏 **Depth on disk is depth in the dependency graph.** A component's children are exactly what sits one level beneath it, never more.
 - 🍃 **Leaves and branches share one shape: a folder holding an entry point.** What differs is only whether other components sit beside it yet, and whether that entry point acts or only contains.
+- 🏷️ **Every public surface is strongly typed.** The type system is a second, mechanically-checked copy of the tree's shape — `Any`/`any`/`interface{}`/raw `object` is a hole in that copy, not a shortcut.
 - 🔁 **The same rule applies at every scale.** The program, a mid-level component, and a three-line leaf are all built from the identical shape — that repetition across depth is what makes this *fractal*.
 - 💉 **Dependencies are received, never self-constructed**, wired explicitly from one composition root.
 - 🔌 **External-facing components are consumed through abstract contracts**, never through their concrete implementation.
