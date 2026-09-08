@@ -1,4 +1,4 @@
-> 🌳 Part of [Fractal Component Architecture](../SKILL.md) — this file materializes the architecture for one language. Read the main document first for the vision and the language-agnostic rules; come here for how it lands in code.
+> 🌳 Part of [Fractal Component Architecture](../../documentation/file.md) — this file materializes the architecture for one language. Read the main document first for the vision and the language-agnostic rules; come here for how it lands in code.
 
 # 16.2 🟨 JavaScript / TypeScript
 

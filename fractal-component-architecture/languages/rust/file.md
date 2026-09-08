@@ -1,9 +1,9 @@
-> 🌳 Part of [Fractal Component Architecture](../SKILL.md) — this file materializes the architecture for one language. Read the main document first for the vision and the language-agnostic rules; come here for how it lands in code.
+> 🌳 Part of [Fractal Component Architecture](../../documentation/file.md) — this file materializes the architecture for one language. Read the main document first for the vision and the language-agnostic rules; come here for how it lands in code.
 
 # 16.6 🦀 Rust
 
 - **Leaf** → a `struct` with its `impl` block, plus a `trait` where an abstract dependency is needed, living in its own module — even before it has any children (§3.1). Of the two folder-mapping conventions below, the classic `login/mod.rs` form is the one that actually delivers this: the folder exists from the moment the module does, empty children-wise until it earns some. The modern sibling-file form (`login.rs` next to `login/`) doesn't force a folder to exist for a childless leaf at all — pick it only where the team already prefers that style over strict adherence to §3.1's "always a folder."
-- **Module = folder** → Rust's module system maps to folders almost exactly like Python's, and for the same reason: the *classic* convention is a `mod.rs` file living directly inside the folder — a literal, direct parallel to `__init__.py` (see [python.md](python.md)). Modern Rust (2018 edition onward) prefers a sibling `foldername.rs` next to `foldername/` instead of `foldername/mod.rs`, but the role is identical either way: this is where the branch's own code lives, and/or where `pub mod` / `pub use` declarations expose its children.
+- **Module = folder** → Rust's module system maps to folders almost exactly like Python's, and for the same reason: the *classic* convention is a `mod.rs` file living directly inside the folder — a literal, direct parallel to `__init__.py` (see [python.md](../python/file.md)). Modern Rust (2018 edition onward) prefers a sibling `foldername.rs` next to `foldername/` instead of `foldername/mod.rs`, but the role is identical either way: this is where the branch's own code lives, and/or where `pub mod` / `pub use` declarations expose its children.
 
   ```rust
   // api.rs (or api/mod.rs) — active branch
