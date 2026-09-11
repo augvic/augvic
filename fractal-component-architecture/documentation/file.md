@@ -83,6 +83,28 @@ Everything at the repo root that is not the program's own folder answers "how is
 
 > 📂 **If a file exists to build, test, or ship the software rather than to BE the software, it belongs at the repo root, outside the program's own folder — never mixed in as a sibling of a real component.**
 
+## 2.2 🏗️ The Two Levels, Named
+
+§2.1 draws the line between the repo root and the tree's real root; it's worth naming the two sides of that line explicitly, since every FCA project is organized across exactly these two levels, one nested inside the other, and never mixed:
+
+```text
+project/                    ← DEV LEVEL
+├── requirements.txt
+├── package.json
+├── node_modules/
+├── make
+└── project/                ← SOFTWARE LEVEL (§2's "Program")
+        └── ...
+```
+
+**The dev level** is the outer folder — the repo root itself. It holds everything that exists to *help build* the software, but is not the software: dependency manifests (`package.json`, `requirements.txt`), installed dependencies (`node_modules/`), build/task automation (`make`, `Makefile`, `Taskfile`), lockfiles, build output (`dist/`, `build/`), CI configuration, and any other tooling a developer needs to work on the project. None of it is ever part of the component tree — it exists *around* the software, not *as* the software.
+
+**The software level** is the inner, program-named folder nested one level down — the tree's actual root, `Program` from §2. Everything the software *is* lives here, and only here: every component, every leaf, every branch, all the way down. This is the folder that answers "what does this system do?" — the dev level only ever answers "how do I build, install, or run it?"
+
+The nesting itself is the signal: the software level sits *inside* the dev level, one level deep, precisely because the software is a thing the dev level exists to serve — never the reverse. A file that could just as easily sit beside `package.json` (a linter config, a `.env.example`, a CI workflow) has already told you which level it belongs to, regardless of what it's named.
+
+> 🏗️ **Two levels, one nesting: the dev level surrounds the software, and the software level *is* the software. A file belongs to whichever question it answers — "how is this built?" places it outside; "what does this system do?" places it inside.**
+
 # 3. 🍃 The Two Node Shapes: Leaf and Branch
 
 Every node in the tree is a **folder**, without exception, from the moment it is created — even a component with no children yet is a folder holding nothing but its own entry point. What makes a node a **leaf** versus a **branch** is never the filesystem shape (both are folders); it is only whether anything besides the entry point currently lives inside that folder.
