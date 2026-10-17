@@ -73,7 +73,7 @@ myapp/                       ← repo root: the DEVELOPMENT level
 │       └── routes/
 ├── tests/                   ← verifies the software; is not part of it
 ├── scripts/                 ← one-off maintenance/ops scripts, not application code
-├── migrations/              ← schema evolution history, not the running architecture
+├── migrations/              ← schema history applied separately (by hand/CI); see §2.3 when the software runs them
 ├── dist/  build/            ← build output, always generated, never authored
 ├── package.json  requirements.txt  pyinstaller.spec   ← how to build/run it
 └── Dockerfile  .gitlab-ci.yml  k8s/                    ← how to ship it
@@ -104,6 +104,41 @@ project/                    ← DEV LEVEL
 The nesting itself is the signal: the software level sits *inside* the dev level, one level deep, precisely because the software is a thing the dev level exists to serve — never the reverse. A file that could just as easily sit beside `package.json` (a linter config, a `.env.example`, a CI workflow) has already told you which level it belongs to, regardless of what it's named.
 
 > 🏗️ **Two levels, one nesting: the dev level surrounds the software, and the software level *is* the software. A file belongs to whichever question it answers — "how is this built?" places it outside; "what does this system do?" places it inside.**
+
+## 2.3 🧭 Deciding the Level by Use: Worked Cases
+
+§2.1 and §2.2 sort the obvious files. A few kinds of files sit in a gray zone: the same *kind* of thing can belong to either level depending on how the software uses it. The test is always the same — **does the running software read, execute or serve it?** If yes, it is part of the tree, as a component or as a resource of one. If it only helps someone build, check, migrate by hand or ship the software, it belongs to the dev level. The cases below come from a real FCA project (a FastAPI API plus a React app in one program folder), and each one is decided by that single question.
+
+```text
+project/
+├── .env  .env.example          ← configuration supplied by whoever runs it (dev/deploy level)
+├── package.json  requirements.txt  tsconfig.json  vite.config.ts  mypy.ini
+├── icon.png                    ← source artwork the shipped icons were made from (not loaded at runtime)
+├── tests/
+│   └── scan_simulator/         ← dev tool: imports the software, receives its services
+├── dist/                       ← build output
+└── project/                    ← SOFTWARE
+    ├── api/                    ← all the Python code; its entry point is the API's composition root
+    │   ├── database/
+    │   │   └── migrator/       ← runs `upgrade head` when the API starts…
+    │   │       └── migrations/ ← …so the migration scripts are its child (runtime resource)
+    │   └── user_data_directory/   ← where runtime data goes (outside the repo)
+    └── app/                    ← all the TypeScript code; index.tsx is the app's composition root
+        ├── index.html  public/  styles.css   ← served by the software: resources of the app component
+        └── ...
+```
+
+- **Migrations.** If the software applies them itself at runtime (e.g. the API runs `upgrade head` on start-up), they are part of the running architecture: they live inside the software, as a child of the component that runs them (`database/migrator/migrations/`), right where the dependency is. If they are applied separately — by hand, by a CI job, by an ops tool — they are a dev-level concern and go to `migrations/` at the repo root, as in §2.1's diagram. The scripts are identical in both cases; only *who runs them* decides the level.
+- **Files a framework requires inside a resource folder.** A migration tool's environment script and revision template (`env.py`, `script.py.mako`) are not behavioral units, but the tool insists on finding them next to the revisions. They stay with the resource folder that needs them; a resource folder holds data and scripts, not components, so it has no entry point of its own (§4 applies to components, not to resources).
+- **Runtime data.** A database file, uploaded files, caches written while the program runs: neither level. They are not the software and not something that builds it — they are the *user's* data. They live outside the repository, in the operating system's per-user data folder (`%LOCALAPPDATA%` on Windows, `$XDG_DATA_HOME` / `~/.local/share` on Linux, `~/Library/Application Support` on macOS), or in a server database named by configuration. Finding that folder is itself a small component (`user_data_directory/`), injected through the composition root like any other dependency.
+- **Configuration files.** `.env` / `.env.example` answer "how is this deployment set up?" — dev/deploy level, at the repo root. The software never goes looking for them from deep inside: a configuration component (§14) reads them once, and the composition root passes it the path.
+- **Assets served by the software.** An `index.html`, a `public/` folder of images, a global stylesheet: the running program serves them, so they are part of the software — resources of the component that serves them (the app folder), not components of their own.
+- **Source artwork and design files.** The full-size image the shipped icons were exported from is never loaded by the program: dev level, even though it looks like an "asset".
+- **Type shims and tool hints.** A file that only exists to tell the compiler about a build tool's types (TypeScript's `vite-env.d.ts`) is tooling. Prefer moving it into the tool's configuration at the dev level (`"types": ["vite/client"]` in `tsconfig.json`) over leaving a non-component file inside the software.
+- **Dev and test tools that use the software.** A simulator or a fixture generator that exercises the software is dev level (`tests/`). The dependency goes one way only: the tool imports the software, never the reverse, and it receives what it needs through its constructor (the services the composition root already built) instead of reaching into globals.
+- **Several languages in one program.** When the program folder holds code in more than one language (an API and a web app), each language's code lives in one child of the program folder, and that child's entry point is the composition root for that runtime. If all the code of one language lives in a single child, that child's entry point *is* the composition root — the program folder needs no entry point of its own just to forward to it (in Python the program folder can stay a namespace package, with no `__init__.py`).
+
+> 🧭 **Same kind of file, different level: decide by use. What the running software reads, executes or serves is part of the tree; what only helps build, check, migrate or ship it is the dev level; what the user produces while using it lives outside the repository altogether.**
 
 # 3. 🍃 The Two Node Shapes: Leaf and Branch
 
@@ -329,6 +364,7 @@ A value that must never be attacker- or user-editable at runtime (an endpoint an
 # 15. ✅ Language-Agnostic Checklist
 
 - **Is the repo root kept to development-level concerns**, with the software itself confined to its own program-named folder (§2.1)?
+- **Is every gray-zone file placed by use** (§2.3)? Runtime-applied migrations and served assets inside the software; separately applied migrations, source artwork, type shims and dev tools at the repo root; user data outside the repository.
 - **Does the tree read as parent → child, one level at a time?** Nothing should depend two levels down without going through the level in between.
 - **Is every component — leaf or branch — a folder holding its entry point**, never a bare file sitting beside its siblings, even when it has no children yet?
 - **Is every leaf one behavioral unit**, not a loose function standing in for a component?
@@ -376,3 +412,11 @@ The vision above is the same regardless of language. What changes is which nativ
 - 🌍 **The vision doesn't change per language. Only the materialization does** — the same tree, expressed through whatever native construct each language already gives you for classes, modules, and packages.
 
 > **You should be able to look at the project tree, in any language, and see the software itself.** 🌳
+
+---
+
+<div align="center">
+
+Fractal Component Architecture (FCA) © 2026 Augusto Viceli, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (see [LICENSE](../LICENSE)).
+
+</div>

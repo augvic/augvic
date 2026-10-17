@@ -25,6 +25,7 @@
           self.routes = routes
   ```
 
+- **Program folder holding several languages** → when all the Python code lives in one child (e.g. `myapp/api/`) next to code in another language (e.g. `myapp/app/`), that child's `__init__.py` is the composition root, and `myapp/` itself can stay a namespace package with no `__init__.py` (§2.3). Entry points for servers use a factory on the root class (`uvicorn myapp.api:Api.serve --factory`).
 - **Abstract dependency** → `typing.Protocol`, satisfied structurally with no explicit inheritance — closest in spirit to Go's implicit interfaces (see [go.md](../go/file.md)).
 - **Data carrier** → a `@dataclass`.
 - **Composition root** → the top-level package's own `__init__.py`, constructing every branch through ordered, explicit steps and injecting dependencies through constructors.
